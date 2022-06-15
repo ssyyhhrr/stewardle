@@ -1,19 +1,27 @@
 const axios = require("axios")
 const _ = require("lodash")
 const fs = require("fs")
+const schedule = require("node-schedule")
+const { mainModule } = require("process")
 
 let drivers = {}
-
-if (fs.existsSync("drivers.json")) {
-    console.log("Deleting drivers.json...")
-    fs.unlinkSync("drivers.json")
-}
+let driver
 
 let year = new Date().getFullYear()
 
-updateDrivers()
+main()
+
+async function main() {
+    await updateDrivers()
+    dotd()
+}
 
 async function updateDrivers() {
+    if (fs.existsSync("drivers.json")) {
+        console.log("Deleting drivers.json...")
+        fs.unlinkSync("drivers.json")
+    }
+
     for (let i = 1950; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
@@ -37,7 +45,31 @@ async function updateDrivers() {
     }
 
     console.log(`Writing ${_.keys(drivers).length} Drivers to drivers.json...`)
-    fs.writeFile("drivers.json", JSON.stringify(drivers), (error) => {
+    fs.writeFileSync("drivers.json", JSON.stringify(drivers), (error) => {
         if (error) throw error
     })
 }
+
+function dotd() {
+    console.log("Selecting Driver of the Day...")
+    driver = getRandomProperty(drivers)
+    console.log(`Driver of the Day is ${driver}!`)
+    console.log(drivers[driver])
+    if (fs.existsSync("driver.txt")) {
+        console.log("Deleting driver.txt...")
+        fs.unlinkSync("driver.txt")
+    }
+    console.log(`Writing ${driver} to driver.txt...`)
+    fs.writeFileSync("driver.txt", driver, (error) => {
+        if (error) throw error
+    })
+}
+
+function getRandomProperty(obj) {
+    let keys = Object.keys(obj)
+    return keys[Math.floor(Math.random() * keys.length)]
+}
+
+schedule.scheduleJob("0 0 * * *", async () => {
+    main()
+})
