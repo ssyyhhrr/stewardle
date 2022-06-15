@@ -40,6 +40,7 @@ async function updateDrivers() {
                         "permanentNumber": driver.Driver.permanentNumber,
                         "firstName": driver.Driver.givenName,
                         "lastName": driver.Driver.familyName,
+                        "age": getAge(driver.Driver.dateOfBirth),
                         "firstYear": i,
                         "nationality": driver.Driver.nationality,
                         "constructor": driver.Constructors[0].name,
@@ -68,12 +69,24 @@ function getRandomProperty(obj) {
     return keys[Math.floor(Math.random() * keys.length)]
 }
 
+function getAge(dateString) {
+    var today = new Date();
+    var birthDate = new Date(dateString);
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
 function server() {
     var app = express()
 
     app.use(express.urlencoded({ extended: true }))
 
     app.get("/driver", (req, res) => {
+        if (!req.query.driver) return res.statusSend(400)
         let search = false
         let response = []
         for (let query in drivers) {
@@ -86,6 +99,11 @@ function server() {
                 if (parseInt(guess.permanentNumber) > parseInt(actual.permanentNumber)) response.push(0) // go down
                 else if (parseInt(guess.permanentNumber) == parseInt(actual.permanentNumber)) response.push(1) // stay the same
                 else if (parseInt(guess.permanentNumber) < parseInt(actual.permanentNumber)) response.push(2) // go up
+
+                // age
+                if (parseInt(guess.age) > parseInt(actual.age)) response.push(0) // go down
+                else if (parseInt(guess.age) == parseInt(actual.age)) response.push(1) // stay the same
+                else if (parseInt(guess.age) < parseInt(actual.age)) response.push(2) // go up
 
                 // first year
                 if (parseInt(guess.firstYear) > parseInt(actual.firstYear)) response.push(0) // go down
@@ -109,10 +127,11 @@ function server() {
         if (!search) return res.sendStatus(400)
         res.json({
             "permanentNumber": response[0],
-            "firstYear": response[1],
-            "nationality": response[2],
-            "constructor": response[3],
-            "wins": response[4]
+            "age": response[1],
+            "firstYear": response[2],
+            "nationality": response[3],
+            "constructor": response[4],
+            "wins": response[5]
         })
     })
 
