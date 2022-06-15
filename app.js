@@ -2,7 +2,7 @@ const axios = require("axios")
 const _ = require("lodash")
 const fs = require("fs")
 const schedule = require("node-schedule")
-const { mainModule } = require("process")
+const express = require("express")
 
 let drivers = {}
 let driver
@@ -11,9 +11,15 @@ let year = new Date().getFullYear()
 
 main()
 
+schedule.scheduleJob("0 0 * * *", async () => {
+    await updateDrivers()
+    dotd()
+})
+
 async function main() {
     await updateDrivers()
     dotd()
+    server()
 }
 
 async function updateDrivers() {
@@ -55,14 +61,6 @@ function dotd() {
     driver = getRandomProperty(drivers)
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
-    if (fs.existsSync("driver.txt")) {
-        console.log("Deleting driver.txt...")
-        fs.unlinkSync("driver.txt")
-    }
-    console.log(`Writing ${driver} to driver.txt...`)
-    fs.writeFileSync("driver.txt", driver, (error) => {
-        if (error) throw error
-    })
 }
 
 function getRandomProperty(obj) {
@@ -70,6 +68,56 @@ function getRandomProperty(obj) {
     return keys[Math.floor(Math.random() * keys.length)]
 }
 
-schedule.scheduleJob("0 0 * * *", async () => {
-    main()
-})
+function server() {
+    var app = express()
+
+    app.use(express.urlencoded({ extended: true }))
+
+    app.get("/driver", (req, res) => {
+        let search = false
+        let response = []
+        for (let query in drivers) {
+            if (req.query.driver == drivers[query].firstName + " " + drivers[query].lastName) {
+                search = true
+                let guess = drivers[query]
+                let actual = drivers[driver]
+
+                // permanent number
+                if (parseInt(guess.permanentNumber) > parseInt(actual.permanentNumber)) response.push(0) // go down
+                else if (parseInt(guess.permanentNumber) == parseInt(actual.permanentNumber)) response.push(1) // stay the same
+                else if (parseInt(guess.permanentNumber) < parseInt(actual.permanentNumber)) response.push(2) // go up
+
+                // first year
+                if (parseInt(guess.firstYear) > parseInt(actual.firstYear)) response.push(0) // go down
+                else if (parseInt(guess.firstYear) == parseInt(actual.firstYear)) response.push(1) // stay the same
+                else if (parseInt(guess.firstYear) < parseInt(actual.firstYear)) response.push(2) // go up
+
+                // nationality
+                if (guess.nationality == actual.nationality) response.push(1) // correct nationality
+                else response.push(0) // incorrect nationality
+
+                // constructor
+                if (guess.constructor == actual.constructor) response.push(1) // correct constructor
+                else response.push(0) // incorrect constructor
+
+                // wins
+                if (parseInt(guess.wins) > parseInt(actual.wins)) response.push(0) // go down
+                else if (parseInt(guess.wins) == parseInt(actual.wins)) response.push(1) // stay the same
+                else if (parseInt(guess.wins) < parseInt(actual.wins)) response.push(2) // go up
+            }
+        }
+        if (!search) return res.sendStatus(400)
+        res.json({
+            "permanentNumber": response[0],
+            "firstYear": response[1],
+            "nationality": response[2],
+            "constructor": response[3],
+            "wins": response[4]
+        })
+    })
+
+    let port = 3000
+    app.listen(port, () => {
+        console.log(`Listening on port ${port}!`)
+    })
+}
