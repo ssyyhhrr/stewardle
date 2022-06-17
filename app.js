@@ -12,22 +12,27 @@ let year = new Date().getFullYear()
 main()
 
 schedule.scheduleJob("0 0 * * *", async () => {
-    await updateDrivers()
-    dotd()
+    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async res => {
+        await updateDrivers()
+        dotd()
+    }).catch(e => {
+        console.log("API is unreachable! Not updating drivers...")
+        dotd()
+    })
 })
 
 async function main() {
-    await updateDrivers()
-    dotd()
+    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async res => {
+        await updateDrivers()
+        dotd()
+    }).catch(e => {
+        console.log("API is unreachable! Not updating drivers...")
+        dotd()
+    })
     server()
 }
 
 async function updateDrivers() {
-    if (fs.existsSync("drivers.json")) {
-        console.log("Deleting drivers.json...")
-        fs.unlinkSync("drivers.json")
-    }
-
     for (let i = 1950; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
@@ -51,8 +56,13 @@ async function updateDrivers() {
         })
     }
 
+    if (fs.existsSync("assets/drivers.json")) {
+        console.log("Deleting drivers.json...")
+        fs.unlinkSync("assets/drivers.json")
+    }
+
     console.log(`Writing ${_.keys(drivers).length} Drivers to drivers.json...`)
-    fs.writeFileSync("drivers.json", JSON.stringify(drivers), (error) => {
+    fs.writeFileSync("assets/drivers.json", JSON.stringify(drivers), (error) => {
         if (error) throw error
     })
 }
@@ -84,6 +94,14 @@ function server() {
     var app = express()
 
     app.use(express.urlencoded({ extended: true }))
+    app.use(express.static("assets"))
+
+    app.set("views", "views")
+    app.set("view engine", "ejs")
+
+    app.get("/", (req, res) => {
+        res.render("index")
+    })
 
     app.get("/driver", (req, res) => {
         if (!req.query.driver) return res.statusSend(400)
