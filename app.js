@@ -42,9 +42,9 @@ async function updateDrivers() {
                     drivers[driver.Driver.driverId].constructor = driver.Constructors[0].name
                 } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
                     drivers[driver.Driver.driverId] = {
-                        "permanentNumber": driver.Driver.permanentNumber,
                         "firstName": driver.Driver.givenName,
                         "lastName": driver.Driver.familyName,
+                        "permanentNumber": driver.Driver.permanentNumber,
                         "age": getAge(driver.Driver.dateOfBirth),
                         "firstYear": i,
                         "nationality": driver.Driver.nationality,

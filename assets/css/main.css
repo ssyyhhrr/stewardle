@@ -87,20 +87,27 @@ input[type=text] {
 }
 
 .header {
-    color: white;
-    font-family: "FormulaOne";
-    border: 0px !important;
+    outline: 0px !important;
     vertical-align: bottom;
     background-color: transparent !important;
 }
 
-.text {
-    position: absolute;
+.header .text {
     bottom: 0;
     left: 0;
+    line-height: normal !important;
+    vertical-align: bottom !important;
+}
+
+.text {
+    line-height: 50px;
+    vertical-align: middle;
+    position: absolute;
     width: 50px;
     margin-left: auto;
     margin-right: auto;
+    color: white;
+    font-family: "FormulaOne";
 }
 
 .row {
@@ -112,8 +119,8 @@ input[type=text] {
     background-color: #171717;
     height: 50px;
     width: 50px;
-    border: 2px solid #3a3a3c;
-    margin: 3px;
+    outline: 2px solid #3a3a3c;
+    margin: 4px;
     text-align: center;
     position: relative;
 }
@@ -123,4 +130,30 @@ input[type=text] {
     margin-left: auto;
     margin-right: auto;
     width: 380px;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-10px);
+    }
+
+    40% {
+        transform: translateX(10px);
+    }
+
+    60% {
+        transform: translateX(-10px);
+    }
+
+    80% {
+        transform: translateX(10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
 }

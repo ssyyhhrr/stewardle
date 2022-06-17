@@ -123,7 +123,23 @@ document.addEventListener("keyup", function (event) {
                 }
             })
 
-            document.getElementById("myInput").value = ""
+            if (top > 0.5) {
+                document.getElementById("myInput").value = ""
+                let obj = {}
+                Object.entries(driversObj).forEach(driver => {
+                    if (driver[1].firstName + " " + driver[1].lastName == guess) obj = driver[1]
+                })
+                let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0)
+                for (let i = 0; i < 6; i++) {
+                    frames[i].innerHTML = `<div class="guess text">${Object.values(obj)[i + 2]}</div > `
+                }
+                console.log(obj)
+            }
+            else {
+                let element = document.getElementById("myInput")
+                element.style.removeProperty("animation")
+                setTimeout(() => element.style.animation = "shake .5s", 100)
+            }
         }
     }
 });
