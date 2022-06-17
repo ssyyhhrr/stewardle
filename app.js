@@ -4,6 +4,53 @@ const fs = require("fs")
 const schedule = require("node-schedule")
 const express = require("express")
 
+const flag = {
+    "British": "gb",
+    "Spanish": "es",
+    "Polish": "pl",
+    "Japanese": "jp",
+    "Mexican": "mx",
+    "Australian": "au",
+    "Russian": "ru",
+    "Dutch": "nl",
+    "Belgian": "be",
+    "Canadian": "ca",
+    "New Zealander": "nz",
+    "Thai": "th",
+    "Finnish": "fi",
+    "Brazilian": "br",
+    "German": "de",
+    "French": "fr",
+    "Venezuelan": "ve",
+    "Danish": "dk",
+    "Swedish": "se",
+    "American": "us",
+    "Indonesian": "id",
+    "Italian": "it",
+    "Monegasque": "mc",
+    "Chinese": "cn"
+}
+
+const team = {
+    "McLaren": "mclaren",
+    "Alpine F1 Team": "alpine",
+    "Mercedes": "mercedes",
+    "Sauber": "sauber",
+    "Haas F1 Team": "haas",
+    "Lotus F1": "lotus",
+    "Marussia": "marussia",
+    "Manor Marussia": "marussia",
+    "Renault": "renault",
+    "Alfa Romeo": "alfa",
+    "Williams": "williams",
+    "Aston Martin": "aston",
+    "Caterham": "caterham",
+    "Red Bull": "red",
+    "Toro Rosso": "toro",
+    "Alpha Tauri": "alpha",
+    "Ferrari": "ferrari"
+}
+
 let drivers = {}
 let driver
 
@@ -33,22 +80,22 @@ async function main() {
 }
 
 async function updateDrivers() {
-    for (let i = 1950; i <= year; i++) {
+    for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
             res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
                 if (driver.Driver.driverId in drivers) {
                     drivers[driver.Driver.driverId].wins += parseInt(driver.wins)
-                    drivers[driver.Driver.driverId].constructor = driver.Constructors[0].name
+                    drivers[driver.Driver.driverId].constructor = team[driver.Constructors[0].name]
                 } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
                     drivers[driver.Driver.driverId] = {
                         "firstName": driver.Driver.givenName,
                         "lastName": driver.Driver.familyName,
+                        "nationality": flag[driver.Driver.nationality],
+                        "constructor": team[driver.Constructors[0].name],
                         "permanentNumber": driver.Driver.permanentNumber,
                         "age": getAge(driver.Driver.dateOfBirth),
                         "firstYear": i,
-                        "nationality": driver.Driver.nationality,
-                        "constructor": driver.Constructors[0].name,
                         "wins": parseInt(driver.wins)
                     }
                 }

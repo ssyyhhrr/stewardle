@@ -130,10 +130,12 @@ document.addEventListener("keyup", function (event) {
                     if (driver[1].firstName + " " + driver[1].lastName == guess) obj = driver[1]
                 })
                 let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0)
-                for (let i = 0; i < 6; i++) {
-                    frames[i].innerHTML = `<div class="guess text">${Object.values(obj)[i + 2]}</div > `
+                frames[0].innerHTML = `<div class="guess text">${Object.values(obj)[0].charAt(0)}${Object.values(obj)[1].charAt(0)}</div>`
+                frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 2]}.svg">`
+                frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 2]}.webp">`
+                for (let i = 2; i < 6; i++) {
+                    frames[i + 1].innerHTML = `<div class="guess text"> ${Object.values(obj)[i + 2]}</div>`
                 }
-                console.log(obj)
             }
             else {
                 let element = document.getElementById("myInput")
