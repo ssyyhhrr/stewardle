@@ -17,13 +17,24 @@ function autocomplete(inp, arr) {
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
+            let s1 = arr[i].split(" ")[0]
+            let s2 = arr[i].split(" ")[1]
             /*check if the item starts with the same letters as the text field value:*/
-            if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            if (s1.substr(0, val.length).toUpperCase() == val.toUpperCase() || s2.substr(0, val.length).toUpperCase() == val.toUpperCase() || arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                let first = s1.substr(0, val.length).toUpperCase() == val.toUpperCase()
+                let second = s2.substr(0, val.length).toUpperCase() == val.toUpperCase()
                 /*create a DIV element for each matching element:*/
                 b = document.createElement("DIV");
                 /*make the matching letters bold:*/
-                b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                b.innerHTML += arr[i].substr(val.length);
+                if (first) {
+                    b.innerHTML = "<strong>" + s1.substr(0, val.length) + "</strong>" + s1.substr(val.length) + " " + s2;
+                } else if (second) {
+                    b.innerHTML = s1 + " <strong>" + s2.substr(0, val.length) + "</strong>";
+                    b.innerHTML += s2.substr(val.length);
+                } else {
+                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].substr(val.length);
+                }
                 /*insert a input field that will hold the current array item's value:*/
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                 /*execute a function when someone clicks on the item value (DIV element):*/

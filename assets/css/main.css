@@ -156,6 +156,34 @@ input[type=text] {
     font-family: "FormulaOne";
 }
 
+.credits {
+    color: white;
+    position: absolute;
+    text-align: center;
+    bottom: 1em;
+    font-family: "FormulaOne";
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%)
+}
+
+.credits p {
+    margin-bottom: 0.5em;
+}
+
+a {
+    color: #fff;
+}
+
+p a {
+    text-decoration: none;
+    color: #fd1706;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
 .row {
     display: flex;
     flex-direction: row;

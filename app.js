@@ -3,6 +3,8 @@ const _ = require("lodash")
 const fs = require("fs")
 const schedule = require("node-schedule")
 const express = require("express")
+const favicon = require("serve-favicon")
+const morgan = require("morgan")
 
 const flag = {
     "British": "gb",
@@ -147,6 +149,8 @@ function server() {
 
     app.use(express.urlencoded({ extended: true }))
     app.use(express.static("assets"))
+    app.use(favicon('assets/favicon.ico'))
+    app.use(morgan("combined"))
 
     app.set("views", "views")
     app.set("view engine", "ejs")
