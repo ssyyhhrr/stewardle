@@ -64,6 +64,8 @@ schedule.scheduleJob("0 0 * * *", async () => {
         dotd()
     }).catch(e => {
         console.log("API is unreachable! Not updating drivers...")
+        let data = fs.readFileSync("./assets/drivers.json")
+        drivers = JSON.parse(data)
         dotd()
     })
 })
@@ -74,6 +76,8 @@ async function main() {
         dotd()
     }).catch(e => {
         console.log("API is unreachable! Not updating drivers...")
+        let data = fs.readFileSync("./assets/drivers.json")
+        drivers = JSON.parse(data)
         dotd()
     })
     server()
@@ -91,6 +95,7 @@ async function updateDrivers() {
                     drivers[driver.Driver.driverId] = {
                         "firstName": driver.Driver.givenName,
                         "lastName": driver.Driver.familyName,
+                        "code": driver.Driver.code,
                         "nationality": flag[driver.Driver.nationality],
                         "constructor": team[driver.Constructors[0].name],
                         "permanentNumber": driver.Driver.permanentNumber,
@@ -150,6 +155,12 @@ function server() {
         res.render("index")
     })
 
+    app.get("/winner", (req, res) => {
+        res.json({
+            "winner": drivers[driver].firstName + " " + drivers[driver].lastName
+        })
+    })
+
     app.get("/driver", (req, res) => {
         if (!req.query.driver) return res.statusSend(400)
         let search = false
@@ -159,6 +170,14 @@ function server() {
                 search = true
                 let guess = drivers[query]
                 let actual = drivers[driver]
+
+                // nationality
+                if (guess.nationality == actual.nationality) response.push(1) // correct nationality
+                else response.push(3) // incorrect nationality
+
+                // constructor
+                if (guess.constructor == actual.constructor) response.push(1) // correct constructor
+                else response.push(3) // incorrect constructor
 
                 // permanent number
                 if (parseInt(guess.permanentNumber) > parseInt(actual.permanentNumber)) response.push(0) // go down
@@ -175,14 +194,6 @@ function server() {
                 else if (parseInt(guess.firstYear) == parseInt(actual.firstYear)) response.push(1) // stay the same
                 else if (parseInt(guess.firstYear) < parseInt(actual.firstYear)) response.push(2) // go up
 
-                // nationality
-                if (guess.nationality == actual.nationality) response.push(1) // correct nationality
-                else response.push(0) // incorrect nationality
-
-                // constructor
-                if (guess.constructor == actual.constructor) response.push(1) // correct constructor
-                else response.push(0) // incorrect constructor
-
                 // wins
                 if (parseInt(guess.wins) > parseInt(actual.wins)) response.push(0) // go down
                 else if (parseInt(guess.wins) == parseInt(actual.wins)) response.push(1) // stay the same
@@ -191,11 +202,11 @@ function server() {
         }
         if (!search) return res.sendStatus(400)
         res.json({
-            "permanentNumber": response[0],
-            "age": response[1],
-            "firstYear": response[2],
-            "nationality": response[3],
-            "constructor": response[4],
+            "nationality": response[0],
+            "constructor": response[1],
+            "permanentNumber": response[2],
+            "age": response[3],
+            "firstYear": response[4],
             "wins": response[5]
         })
     })

@@ -108,7 +108,7 @@ fetch(`${window.location.href}/drivers.json`).then(res => {
     })
 })
 
-document.addEventListener("keyup", function (event) {
+document.addEventListener("keyup", async function (event) {
     if (event.keyCode === 13) {
         let value = document.getElementById("myInput").value
         if (value != "") {
@@ -130,11 +130,66 @@ document.addEventListener("keyup", function (event) {
                     if (driver[1].firstName + " " + driver[1].lastName == guess) obj = driver[1]
                 })
                 let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0)
-                frames[0].innerHTML = `<div class="guess text">${Object.values(obj)[0].charAt(0)}${Object.values(obj)[1].charAt(0)}</div>`
-                frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 2]}.svg">`
-                frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 2]}.webp">`
+                frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
+                frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 3]}.svg">`
+                frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3]}.webp">`
                 for (let i = 2; i < 6; i++) {
-                    frames[i + 1].innerHTML = `<div class="guess text"> ${Object.values(obj)[i + 2]}</div>`
+                    frames[i + 1].innerHTML = `<div class="guess text"> ${Object.values(obj)[i + 3]}</div>`
+                }
+                let answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
+                let json = await answer.json()
+                let won = true
+                Object.values(json).forEach(async (answer, index) => {
+                    if (answer != 1) won = false
+                    setTimeout(() => {
+                        if (answer == 0) frames[index + 1].classList.add("down")
+                        else if (answer == 1) frames[index + 1].classList.add("correct")
+                        else if (answer == 2) frames[index + 1].classList.add("up")
+                        else if (answer == 3) frames[index + 1].classList.add("incorrect")
+                    }, index * 250)
+                })
+                if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length == 0) {
+                    let data = await fetch(`${window.location.href}winner`)
+                    let winner = await data.json()
+                    let gg = document.getElementsByClassName("input")[0]
+                    gg.classList.remove("input")
+                    gg.classList.add("gg")
+                    let greeting = won ? "Congratulations!" : "Bwoah."
+                    gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
+                    // Set the date we're counting down to
+                    let d = new Date()
+                    var countDownDate = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0));
+
+                    // Update the count down every 1 second
+                    var x = setInterval(function () {
+
+                        // Get today's date and time
+                        var now = new Date().getTime();
+
+                        // Find the distance between now and the count down date
+                        var distance = countDownDate - now;
+
+                        // Time calculations for days, hours, minutes and seconds
+                        const millisecond = 1
+                        const second = 1000
+                        const minute = second * 60
+                        const hour = minute * 60
+                        const day = hour * 24;
+                        let hours = Math.trunc((distance % day) / hour)
+                        let minutes = Math.trunc((distance % hour) / minute)
+                        let seconds = Math.trunc((distance % minute) / second)
+                        let milliseconds = secondsLeft = Math.trunc((distance % second) / millisecond)
+
+                        // Display the result in the element with id="demo"
+                        document.getElementById("time").innerHTML = ("0" + hours).slice(-2) + ":"
+                            + ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2) + ":" + ("00" + milliseconds).slice(-3);
+
+                        // If the count down is finished, write some text
+                        if (distance < 0) {
+                            clearInterval(x);
+                            document.getElementById("time").innerHTML = "EXPIRED";
+                        }
+                    }, 1);
                 }
             }
             else {
