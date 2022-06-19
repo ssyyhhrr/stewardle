@@ -1,3 +1,5 @@
+let canClose = true
+
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
@@ -251,4 +253,25 @@ function editDistance(s1, s2) {
             costs[s2.length] = lastValue;
     }
     return costs[s2.length];
+}
+
+document.getElementsByClassName("backdrop")[0].onmousedown = () => {
+    close()
+}
+
+document.getElementsByClassName("close")[0].onmousedown = () => {
+    close()
+}
+
+function close() {
+    if (!canClose) return
+    canClose = false
+    let tutorial = document.getElementsByClassName("tutorial")[0]
+    let backdrop = document.getElementsByClassName("backdrop")[0]
+    tutorial.style.opacity = 0
+    backdrop.style.opacity = 0
+    setTimeout(() => {
+        tutorial.remove()
+        backdrop.remove()
+    }, 500)
 }
