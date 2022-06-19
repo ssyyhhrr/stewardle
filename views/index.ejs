@@ -10,7 +10,45 @@
     <meta name="description" content="Test your F1 driver knowledge by guessing the F1 driver using the clues from your previous guesses! Inspired by Wordle, created by syhr."
 </head>
 <body>
-    <h1>Stewardle</h1>
+    <div class="tutorial">
+        <p>Guess the <b>STEWARDLE</b> in six tries.<br><br>
+            Each guess must be a valid F1 driver name who has raced in the 2014 season or later. Hit the enter button to submit.<br><br>
+            After each guess, the color of the tiles will change to show how close your guess was to the Driver of the Day
+        </p>
+        <div class="splitter"></div>
+        <p><b>Examples</b></p>
+        <div class="row">
+<!--             <div class="frame"><div class="guess text">HAM</div></div> -->
+            <div class="frame correct"><img class="flag" src="./flags/gb.svg"></div>
+            <p>The driver is of British nationality.</p>
+<!--             <div class="frame incorrect"><img class="team" src="./logos/mercedes.webp"></div>
+            <div class="frame up"><div class="guess text">44</div></div>
+            <div class="frame down"><div class="guess text">37</div></div>
+            <div class="frame up"><div class="guess text">2007</div></div>
+            <div class="frame down"><div class="guess text">103</div></div> -->
+        </div>
+        <div class="row">
+            <div class="frame incorrect"><img class="team" src="./logos/mercedes.webp"></div>
+            <p>The driver does not race for Mercedes.</p>
+        </div>
+        <div class="row">
+            <div class="frame previous"><img class="team" src="./logos/haas.webp"></div>
+            <p>The driver previously raced for Haas.</p>
+        </div>
+        <div class="row">
+            <div class="frame up"><div class="guess text">44</div></div>
+            <p>The number is too low.</p>
+        </div>
+        <div class="row">
+            <div class="frame down"><div class="guess text">103</div></div>
+            <p>The number is too high.</p>
+        </div>
+        <p></p>
+        <div class="splitter"></div>
+        <p>A new STEWARDLE will be available each day!</p>
+    </div>
+    <div class="backdrop"></div>
+    <div class="title"><h1>Stewardle</h1></div>
     <div class="board">
         <div class="row header">
             <div class="frame header"><div class="text">Driver</div></div>
