@@ -49,7 +49,7 @@ const team = {
     "Caterham": "caterham",
     "Red Bull": "red",
     "Toro Rosso": "toro",
-    "Alpha Tauri": "alpha",
+    "AlphaTauri": "alpha",
     "Ferrari": "ferrari"
 }
 
