@@ -126,19 +126,26 @@ document.addEventListener("keyup", async function (event) {
     if (event.keyCode === 13) {
         let value = document.getElementById("myInput").value
         if (value != "") {
+            let potential = 0
+            let lower = 0
             let top = 0
             let comparison = 0
             let guess
             drivers.forEach(driver => {
                 comparison = similarity(value, driver)
+                if (comparison > lower) potential++
                 if (comparison > top) {
                     top = comparison
                     guess = driver
                 }
             })
 
-            if (top > 0.5) {
+            if (potential <= 1 || document.getElementsByClassName("autocomplete-items")[0].children.length <= 1) {
                 document.getElementById("myInput").value = ""
+                var x = document.getElementsByClassName("autocomplete-items");
+                for (var i = 0; i < x.length; i++) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
                 let obj = {}
                 Object.entries(driversObj).forEach(driver => {
                     if (driver[1].firstName + " " + driver[1].lastName == guess) obj = driver[1]
@@ -148,7 +155,7 @@ document.addEventListener("keyup", async function (event) {
                 frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 3]}.svg">`
                 frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp">`
                 for (let i = 2; i < 6; i++) {
-                    frames[i + 1].innerHTML = `<div class="guess text"> ${Object.values(obj)[i + 3]}</div>`
+                    frames[i + 1].innerHTML = `<div class="guess text">${Object.values(obj)[i + 3]}</div>`
                 }
                 let answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
                 let json = await answer.json()
@@ -227,7 +234,7 @@ function similarity(s1, s2) {
     if (longerLength == 0) {
         return 1.0;
     }
-    return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+    return (longer.includes(shorter)) ? (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength) : 0;
 }
 
 function editDistance(s1, s2) {
