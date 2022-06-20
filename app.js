@@ -180,7 +180,7 @@ function server() {
                 else response.push(3) // incorrect nationality
 
                 // constructors
-                if (guess.constructors[guess.constructors.length - 1] == actual.constructors[guess.constructors.length - 1]) response.push(1) // correct constructor
+                if (guess.constructors[guess.constructors.length - 1] == actual.constructors[actual.constructors.length - 1]) response.push(1) // correct constructor
                 else if (actual.constructors.includes(guess.constructors[guess.constructors.length - 1])) response.push(4) // previous constructor
                 else response.push(3) // incorrect constructor
 

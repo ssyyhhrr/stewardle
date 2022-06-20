@@ -140,7 +140,7 @@ document.addEventListener("keyup", async function (event) {
                 }
             })
 
-            if (potential <= 1 || document.getElementsByClassName("autocomplete-items")[0].children.length <= 1) {
+            if (potential == 1 || document.getElementsByClassName("autocomplete-items")[0].children.length == 1 && value.replace(/[0-9]/g, '') != "") {
                 document.getElementById("myInput").value = ""
                 var x = document.getElementsByClassName("autocomplete-items");
                 for (var i = 0; i < x.length; i++) {
@@ -215,13 +215,17 @@ document.addEventListener("keyup", async function (event) {
                 }
             }
             else {
-                let element = document.getElementById("myInput")
-                element.style.removeProperty("animation")
-                setTimeout(() => element.style.animation = "shake .5s", 100)
+                shake()
             }
         }
     }
 });
+
+function shake() {
+    let element = document.getElementById("myInput")
+    element.style.removeProperty("animation")
+    setTimeout(() => element.style.animation = "shake .5s", 100)
+}
 
 function similarity(s1, s2) {
     var longer = s1;
@@ -234,7 +238,7 @@ function similarity(s1, s2) {
     if (longerLength == 0) {
         return 1.0;
     }
-    return (longer.includes(shorter)) ? (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength) : 0;
+    return (longer.toLowerCase().includes(shorter.toLowerCase())) ? (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength) : 0;
 }
 
 function editDistance(s1, s2) {
