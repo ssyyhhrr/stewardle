@@ -1,5 +1,5 @@
-let canOpen = false
-let canClose = true
+let canOpen = true
+let canClose = false
 
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
@@ -132,7 +132,8 @@ document.addEventListener("keyup", async function (event) {
 
             if (potential == 1 || document.getElementsByClassName("autocomplete-items")[0].children.length == 1 && value.replace(/[0-9]/g, '') != "") {
                 if (localStorage.guesses == null) {
-                    localStorage.guesses = JSON.stringify([guess])
+                    let d = new Date()
+                    localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
                 }
                 else {
                     let guesses = JSON.parse(localStorage.guesses)
@@ -160,6 +161,7 @@ function shake() {
 }
 
 async function submit(guess) {
+    localStorage.first = false
     return new Promise(async (res, rej) => {
         let obj = {}
         Object.entries(driversObj).forEach(driver => {
@@ -326,9 +328,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 drivers.push(driver[1].firstName + " " + driver[1].lastName)
             })
             autocomplete(document.getElementById("myInput"), drivers);
-            JSON.parse(localStorage.guesses).forEach(async guess => {
-                await submit(guess)
-            })
+            let utc = new Date()
+            let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
+            if (JSON.parse(localStorage.guesses)[0] < d) {
+                localStorage.removeItem("guesses")
+            }
+            if (localStorage.guesses != null) {
+                JSON.parse(localStorage.guesses).forEach(async (guess, index) => {
+                    if (index > 0) await submit(guess)
+                })
+            }
+            if (localStorage.first == null) open()
         })
     })
 })

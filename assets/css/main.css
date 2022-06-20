@@ -232,13 +232,14 @@ p a:hover {
     max-height: 80vh;
     position: fixed;
     background-color: #171717;
-    z-index: 2;
+    z-index: -1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);
     padding: 1.6em;
     transition: all 0.5s;
+    opacity: 0;
 }
 
 .splitter {
@@ -268,9 +269,9 @@ p a:hover {
     margin: 0;
     padding: 0;
     transform: translate(-25vw, -25vh);
-    opacity: 0.6;
+    opacity: 0;
     transition: all 0.5s;
-    z-index: 1
+    z-index: -1;
 }
 
 .frame {
