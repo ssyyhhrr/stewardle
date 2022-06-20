@@ -1,3 +1,4 @@
+let canOpen = false
 let canClose = true
 
 function autocomplete(inp, arr) {
@@ -263,6 +264,26 @@ document.getElementsByClassName("close")[0].onmousedown = () => {
     close()
 }
 
+document.getElementsByClassName("info")[0].onmousedown = () => {
+    open()
+}
+
+function open() {
+    if (!canOpen) return
+    canOpen = false
+    let tutorial = document.getElementsByClassName("tutorial")[0]
+    let backdrop = document.getElementsByClassName("backdrop")[0]
+    tutorial.style.zIndex = 2
+    backdrop.style.zIndex = 1
+    setTimeout(() => {
+        tutorial.style.opacity = 1
+        backdrop.style.opacity = 0.6
+    }, 100)
+    setTimeout(() => {
+        canClose = true
+    }, 500)
+}
+
 function close() {
     if (!canClose) return
     canClose = false
@@ -271,7 +292,8 @@ function close() {
     tutorial.style.opacity = 0
     backdrop.style.opacity = 0
     setTimeout(() => {
-        tutorial.remove()
-        backdrop.remove()
+        tutorial.style.zIndex = -1
+        backdrop.style.zIndex = -1
+        canOpen = true
     }, 500)
 }
