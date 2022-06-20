@@ -145,6 +145,7 @@ input[type=text] {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-bottom: 1.4em;
 }
 
 .header {
@@ -340,7 +341,6 @@ p a:hover {
     margin-left: auto;
     margin-right: auto;
     width: 380px;
-    margin-top: 1.4em;
 }
 
 @keyframes shake {

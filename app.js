@@ -92,18 +92,18 @@ async function updateDrivers() {
             res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
                 if (driver.Driver.driverId in drivers) {
                     drivers[driver.Driver.driverId].wins += parseInt(driver.wins)
-                    drivers[driver.Driver.driverId].constructor = team[driver.Constructors[0].name]
+                    if (!drivers[driver.Driver.driverId].constructors.includes(team[driver.Constructors[0].name])) drivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
                 } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
                     drivers[driver.Driver.driverId] = {
                         "firstName": driver.Driver.givenName,
                         "lastName": driver.Driver.familyName,
                         "code": driver.Driver.code,
                         "nationality": flag[driver.Driver.nationality],
-                        "constructor": team[driver.Constructors[0].name],
+                        "constructors": [team[driver.Constructors[0].name]],
                         "permanentNumber": driver.Driver.permanentNumber,
                         "age": getAge(driver.Driver.dateOfBirth),
                         "firstYear": i,
-                        "wins": parseInt(driver.wins)
+                        "wins": parseInt(driver.wins),
                     }
                 }
             })
@@ -179,8 +179,9 @@ function server() {
                 if (guess.nationality == actual.nationality) response.push(1) // correct nationality
                 else response.push(3) // incorrect nationality
 
-                // constructor
-                if (guess.constructor == actual.constructor) response.push(1) // correct constructor
+                // constructors
+                if (guess.constructors[guess.constructors.length - 1] == actual.constructors[guess.constructors.length - 1]) response.push(1) // correct constructor
+                else if (actual.constructors.includes(guess.constructors[guess.constructors.length - 1])) response.push(4) // previous constructor
                 else response.push(3) // incorrect constructor
 
                 // permanent number

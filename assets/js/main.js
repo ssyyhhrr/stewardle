@@ -146,7 +146,7 @@ document.addEventListener("keyup", async function (event) {
                 let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0)
                 frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
                 frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 3]}.svg">`
-                frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3]}.webp">`
+                frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp">`
                 for (let i = 2; i < 6; i++) {
                     frames[i + 1].innerHTML = `<div class="guess text"> ${Object.values(obj)[i + 3]}</div>`
                 }
@@ -160,6 +160,7 @@ document.addEventListener("keyup", async function (event) {
                         else if (answer == 1) frames[index + 1].classList.add("correct")
                         else if (answer == 2) frames[index + 1].classList.add("up")
                         else if (answer == 3) frames[index + 1].classList.add("incorrect")
+                        else if (answer == 4) frames[index + 1].classList.add("previous")
                     }, index * 250)
                 })
                 if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length == 0) {
