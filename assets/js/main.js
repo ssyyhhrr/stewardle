@@ -238,7 +238,11 @@ async function submit(guess, real) {
             categories.forEach((category, index) => {
                 document.getElementById(category).innerText = stats[index]
             })
-            let data = await fetch(`${window.location.href}winner`)
+            let data = await fetch(`${window.location.href}winner`, {
+                headers: new Headers({
+                    "Authorization": "Bearer kRyX3RYMRY$&yEc8"
+                })
+            })
             let winner = await data.json()
             let gg = document.getElementsByClassName("input")[0]
             if (gg != null) {

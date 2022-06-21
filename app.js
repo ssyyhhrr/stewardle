@@ -160,6 +160,7 @@ function server() {
     })
 
     app.get("/winner", (req, res) => {
+        if (req.headers.authorization != "Bearer kRyX3RYMRY$&yEc8") return res.end()
         res.json({
             "winner": drivers[driver].firstName + " " + drivers[driver].lastName
         })
