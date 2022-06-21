@@ -216,7 +216,7 @@ async function submit(guess, real) {
                     localStorage.scores = JSON.stringify([0, 0, 0, 0, 0, 0])
                 }
                 let scores = JSON.parse(localStorage.scores)
-                scores[6 - (attempts - 1)]++
+                scores[attempts - 1]++
                 localStorage.scores = JSON.stringify(scores)
             }
             let stats = JSON.parse(localStorage.stats)
