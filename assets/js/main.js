@@ -145,7 +145,7 @@ document.addEventListener("keyup", async function (event) {
                 for (var i = 0; i < x.length; i++) {
                     x[i].parentNode.removeChild(x[i]);
                 }
-                submit(guess)
+                submit(guess, true)
             }
             else {
                 shake()
@@ -160,7 +160,14 @@ function shake() {
     setTimeout(() => element.style.animation = "shake .5s", 100)
 }
 
-async function submit(guess) {
+function pulse() {
+    let element = document.getElementsByClassName("btn")[0]
+    element.style.removeProperty("animation")
+    setTimeout(() => element.style.animation = "pulse .3s linear 1", 100)
+    setTimeout(() => document.getElementById("copied").innerText = "Copied to clipboard!", 400)
+}
+
+async function submit(guess, real) {
     localStorage.first = false
     return new Promise(async (res, rej) => {
         let obj = {}
@@ -188,6 +195,49 @@ async function submit(guess) {
             }, index * 250)
         })
         if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length == 0) {
+            let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+            if (real) {
+                if (localStorage.stats == null) {
+                    localStorage.stats = JSON.stringify([0, 0, 0, 0, 0])
+                }
+                let stats = JSON.parse(localStorage.stats)
+                stats[0]++
+                if (won) {
+                    stats[1]++
+                    stats[3]++
+                }
+                else {
+                    stats[2]++
+                    stats[3] = 0
+                }
+                if (stats[3] > stats[4]) stats[4] = stats[3]
+                localStorage.stats = JSON.stringify(stats)
+                if (localStorage.scores == null) {
+                    localStorage.scores = JSON.stringify([0, 0, 0, 0, 0, 0])
+                }
+                let scores = JSON.parse(localStorage.scores)
+                scores[6 - (attempts - 1)]++
+                localStorage.scores = JSON.stringify(scores)
+            }
+            let stats = JSON.parse(localStorage.stats)
+            let scores = JSON.parse(localStorage.scores)
+            let bars = ["one", "two", "three", "four", "five", "six"]
+            bars.forEach((bar, index) => {
+                document.getElementById(bar).innerText = scores[index]
+            })
+            let highest = 0
+            scores.forEach(score => {
+                if (score > highest) highest = score
+            })
+            bars.forEach((bar, index) => {
+                let width = scores[index] / highest * 100
+                document.getElementById(bar).style.width = `${width}%`
+                if (width == 0) document.getElementById(bar).style.backgroundColor = "#171717"
+            })
+            let categories = ["played", "won", "lost", "streak", "max"]
+            categories.forEach((category, index) => {
+                document.getElementById(category).innerText = stats[index]
+            })
             let data = await fetch(`${window.location.href}winner`)
             let winner = await data.json()
             let gg = document.getElementsByClassName("input")[0]
@@ -195,7 +245,10 @@ async function submit(guess) {
                 gg.classList.remove("input")
                 gg.classList.add("gg")
                 let greeting = won ? "Congratulations!" : "Bwoah."
-                gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
+                gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
+                document.getElementsByClassName("btn")[1].onmousedown = () => {
+                    open(document.getElementsByClassName("shareScreen")[0])
+                }
             }
 
             // Set the date we're counting down to
@@ -279,26 +332,34 @@ function editDistance(s1, s2) {
 }
 
 document.getElementsByClassName("backdrop")[0].onmousedown = () => {
-    close()
+    close(document.getElementsByClassName("tutorial")[0])
 }
 
 document.getElementsByClassName("close")[0].onmousedown = () => {
-    close()
+    close(document.getElementsByClassName("tutorial")[0])
+}
+
+document.getElementsByClassName("closeShare")[0].onmousedown = () => {
+    close(document.getElementsByClassName("shareScreen")[0])
 }
 
 document.getElementsByClassName("info")[0].onmousedown = () => {
-    open()
+    open(document.getElementsByClassName("tutorial")[0])
 }
 
-function open() {
+document.getElementsByClassName("btn")[0].onmousedown = () => {
+    pulse()
+    copy()
+}
+
+function open(element) {
     if (!canOpen) return
     canOpen = false
-    let tutorial = document.getElementsByClassName("tutorial")[0]
     let backdrop = document.getElementsByClassName("backdrop")[0]
-    tutorial.style.zIndex = 2
+    element.style.zIndex = 2
     backdrop.style.zIndex = 1
     setTimeout(() => {
-        tutorial.style.opacity = 1
+        element.style.opacity = 1
         backdrop.style.opacity = 0.6
     }, 100)
     setTimeout(() => {
@@ -306,18 +367,39 @@ function open() {
     }, 500)
 }
 
-function close() {
+function close(element) {
     if (!canClose) return
     canClose = false
-    let tutorial = document.getElementsByClassName("tutorial")[0]
     let backdrop = document.getElementsByClassName("backdrop")[0]
-    tutorial.style.opacity = 0
+    element.style.opacity = 0
     backdrop.style.opacity = 0
     setTimeout(() => {
-        tutorial.style.zIndex = -1
+        element.style.zIndex = -1
         backdrop.style.zIndex = -1
         canOpen = true
     }, 500)
+}
+
+function copy() {
+    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+    let gameNumber = Math.floor((Date.now() - 1655769600000) / 86400000)
+    let clipboard = `Stewardle ${gameNumber} ${attempts}/6\n\n`
+    let x = 0
+    Array.from(document.getElementsByClassName("frame")).filter(x => x.classList.length > 1).forEach((frame, index) => {
+        if (index > 11) {
+            x++
+            if (frame.classList[1] == "down") clipboard += "⬇️"
+            else if (frame.classList[1] == "correct") clipboard += "🟩"
+            else if (frame.classList[1] == "up") clipboard += "⬆️"
+            else if (frame.classList[1] == "incorrect") clipboard += "🟥"
+            else if (frame.classList[1] == "previous") clipboard += "🟧"
+            if (x == 6) {
+                x = 0
+                clipboard += "\n"
+            }
+        }
+    })
+    navigator.clipboard.writeText(clipboard)
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -328,17 +410,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 drivers.push(driver[1].firstName + " " + driver[1].lastName)
             })
             autocomplete(document.getElementById("myInput"), drivers);
-            let utc = new Date()
-            let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
-            if (JSON.parse(localStorage.guesses)[0] < d) {
-                localStorage.removeItem("guesses")
-            }
             if (localStorage.guesses != null) {
+                let utc = new Date()
+                let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
+                let expire = new Date(JSON.parse(localStorage.guesses)[0])
+                if (expire <= d) {
+                    localStorage.removeItem("guesses")
+                }
                 JSON.parse(localStorage.guesses).forEach(async (guess, index) => {
-                    if (index > 0) await submit(guess)
+                    if (index > 0) await submit(guess, false)
                 })
             }
-            if (localStorage.first == null) open()
+            if (localStorage.first == null) open(document.getElementsByClassName("tutorial")[0])
         })
     })
 })

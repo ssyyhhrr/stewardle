@@ -137,7 +137,11 @@ input[type=text] {
 }
 
 .timer {
-    margin-top: 1.4em;
+    margin-top: 1em;
+}
+
+.fa-github {
+    color: #fff;
 }
 
 .board {
@@ -184,6 +188,18 @@ input[type=text] {
     font-family: "FormulaOne";
 }
 
+.shareScreen .text {
+    font-size: 0.9em;
+    line-height: 45px;
+    vertical-align: middle;
+    position: absolute;
+    width: 45px;
+    margin-left: auto;
+    margin-right: auto;
+    color: white;
+    font-family: "FormulaOne";
+}
+
 .credits {
     color: white;
     position: absolute;
@@ -196,6 +212,11 @@ input[type=text] {
 }
 
 .tutorial p {
+    color: white;
+    font-family: "FormulaOne";
+}
+
+.shareScreen p {
     color: white;
     font-family: "FormulaOne";
 }
@@ -242,6 +263,21 @@ p a:hover {
     opacity: 0;
 }
 
+.shareScreen {
+    width: 30em;
+    max-height: 80vh;
+    position: fixed;
+    background-color: #171717;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);
+    padding: 1.6em;
+    transition: all 0.5s;
+    opacity: 0;
+}
+
 .splitter {
     width: 100%;
     height: 1px;
@@ -261,6 +297,23 @@ p a:hover {
     cursor: pointer;
 }
 
+.closeShare {
+    color: #fff;
+    position: absolute;
+    right: 1.6em;
+    font-size: 1.4em;
+    transition: all 0.2s;
+}
+
+.shareScreen b {
+    margin-right: 0.4em;
+}
+
+.closeShare:hover {
+    color: #D3D3D3;
+    cursor: pointer;
+}
+
 .backdrop {
     width: 150vw;
     height: 150vh;
@@ -272,6 +325,35 @@ p a:hover {
     opacity: 0;
     transition: all 0.5s;
     z-index: -1;
+}
+
+.share {
+    display: flex;
+    justify-content: center;
+    margin-top: 1em;
+    cursor: pointer;
+}
+
+.copy {
+    display: inline-flex;
+    margin-top: 1em;
+    margin-right: 0.5em;
+    cursor: pointer;
+}
+
+#copied {
+    display: inline;
+    vertical-align: middle;
+    line-height: 40px;
+}
+
+.btn {
+    background-color: #171717;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #3a3a3c;
+    font-family: "FormulaOne";
+    color: #fff;
 }
 
 .frame {
@@ -289,6 +371,30 @@ p a:hover {
     height: 45px;
     width: 45px;
     margin-right: 10px;
+}
+
+.stats {
+    height: 25px;
+    display: flex;
+    flex-direction: row;
+    gap: 5%;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.stats b {
+    font-variant-numeric: tabular-nums;
+}
+
+.bar {
+    width: 100%;
+    height: 21px;
+    text-align: right;
+    background-color: #508b53;
+    color: #fff;
+    font-family: "FormulaOne";
+    vertical-align: middle;
+    padding-right: 5px;
 }
 
 .tutorial .team {
@@ -367,5 +473,15 @@ p a:hover {
 
     100% {
         transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    25% {
+        transform: scale(0.9);
+    }
+
+    75% {
+        transform: scale(1.1);
     }
 }
