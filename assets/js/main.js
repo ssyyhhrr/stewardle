@@ -440,4 +440,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             if (localStorage.first == null) open(document.getElementsByClassName("tutorial")[0])
         })
     })
+    let d = new Date()
+    let now = Date.now()
+    let midnight = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)).getTime()
+    setTimeout(() => {
+        alert("The Stewardle will change in 1 minute!")
+    }, (midnight - 60000) - now)
+    setTimeout(() => {
+        location.reload()
+    }, (midnight + 60000) - now)
 })
