@@ -1,5 +1,6 @@
 let canOpen = true
 let canClose = false
+let count = true
 
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
@@ -252,6 +253,14 @@ async function submit(guess, real) {
                 gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
                 document.getElementsByClassName("btn")[1].onmousedown = () => {
                     open(document.getElementsByClassName("shareScreen")[0])
+                    if (count) {
+                        new CountUp("played", document.getElementById("played").innerText).start()
+                        new CountUp("won", document.getElementById("won").innerText).start()
+                        new CountUp("lost", document.getElementById("lost").innerText).start()
+                        new CountUp("streak", document.getElementById("streak").innerText).start()
+                        new CountUp("max", document.getElementById("max").innerText).start()
+                        count = false
+                    }
                 }
             }
 
@@ -360,6 +369,9 @@ function open(element) {
     if (!canOpen) return
     canOpen = false
     let backdrop = document.getElementsByClassName("backdrop")[0]
+    backdrop.onmousedown = () => {
+        close(element)
+    }
     element.style.zIndex = 2
     backdrop.style.zIndex = 1
     setTimeout(() => {
