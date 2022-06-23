@@ -86,6 +86,7 @@ async function main() {
 }
 
 async function updateDrivers() {
+    let drivers = {}
     for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
