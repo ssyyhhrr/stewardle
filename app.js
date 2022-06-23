@@ -86,6 +86,7 @@ async function main() {
 }
 
 async function updateDrivers() {
+    drivers = {}
     for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
@@ -126,7 +127,6 @@ function dotd() {
     driver = getRandomProperty(drivers)
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
-    drivers = {}
 }
 
 function getRandomProperty(obj) {
