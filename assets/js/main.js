@@ -48,6 +48,7 @@ function autocomplete(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
+                    enter()
                 });
                 a.appendChild(b);
             }
@@ -115,45 +116,49 @@ let drivers = []
 
 document.addEventListener("keyup", async function (event) {
     if (event.keyCode === 13) {
-        let value = document.getElementById("myInput").value
-        if (value != "") {
-            let potential = 0
-            let lower = 0
-            let top = 0
-            let comparison = 0
-            let guess
-            drivers.forEach(driver => {
-                comparison = similarity(value, driver)
-                if (comparison > lower) potential++
-                if (comparison > top) {
-                    top = comparison
-                    guess = driver
-                }
-            })
-
-            if (potential == 1 || document.getElementsByClassName("autocomplete-items")[0].children.length == 1 && value.replace(/[0-9]/g, '') != "") {
-                if (localStorage.guesses == null) {
-                    let d = new Date()
-                    localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
-                }
-                else {
-                    let guesses = JSON.parse(localStorage.guesses)
-                    guesses.push(guess)
-                    localStorage.guesses = JSON.stringify(guesses)
-                }
-                document.getElementById("myInput").value = ""
-                var x = document.getElementsByClassName("autocomplete-items");
-                for (var i = 0; i < x.length; i++) {
-                    x[i].parentNode.removeChild(x[i]);
-                }
-                submit(guess, true)
-            }
-            else {
-                shake()
-            }
-        }
+        enter()
     }
 });
+
+function enter() {
+    let value = document.getElementById("myInput").value
+    if (value != "") {
+        let potential = 0
+        let lower = 0
+        let top = 0
+        let comparison = 0
+        let guess
+        drivers.forEach(driver => {
+            comparison = similarity(value, driver)
+            if (comparison > lower) potential++
+            if (comparison > top) {
+                top = comparison
+                guess = driver
+            }
+        })
+
+        if (potential == 1 || document.getElementsByClassName("autocomplete-items")[0].children.length == 1 && value.replace(/[0-9]/g, '') != "") {
+            if (localStorage.guesses == null) {
+                let d = new Date()
+                localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
+            }
+            else {
+                let guesses = JSON.parse(localStorage.guesses)
+                guesses.push(guess)
+                localStorage.guesses = JSON.stringify(guesses)
+            }
+            document.getElementById("myInput").value = ""
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                x[i].parentNode.removeChild(x[i]);
+            }
+            submit(guess, true)
+        }
+        else {
+            shake()
+        }
+    }
+}
 
 function shake() {
     let element = document.getElementById("myInput")
