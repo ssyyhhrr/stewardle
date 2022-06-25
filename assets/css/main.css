@@ -273,7 +273,7 @@ p a:hover {
 
 .shareScreen {
     max-width: 30em;
-    max-height: 80vh;
+    max-height: 90vh;
     min-width: 480px;
     position: fixed;
     background-color: #171717;
@@ -430,7 +430,7 @@ p a:hover {
 }
 
 .down {
-    background-color: #4d81e4;
+    background-color: #b042ff;
     border-radius: 0px 0px 36% 36%;
 }
 
@@ -581,6 +581,7 @@ p a:hover {
     .frame {
         height: 35px;
         width: 35px;
+        outline: 1px solid #3a3a3c;
     }
 
     .flag {
@@ -605,7 +606,6 @@ p a:hover {
 
 @media(max-height:720px) {
     .shareScreen {
-        max-height: 90vh;
         overflow-y: scroll;
     }
 }

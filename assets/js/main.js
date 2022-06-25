@@ -267,6 +267,27 @@ async function submit(guess, real) {
                         count = false
                     }
                 }
+                setTimeout(() => {
+                    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+                    let gameNumber = Math.floor((Date.now() - 1655769600000) / 86400000)
+                    let clipboard = `Stewardle ${gameNumber} ${attempts}/6<br><br>`
+                    let x = 0
+                    Array.from(document.getElementsByClassName("frame")).filter(x => x.classList.length > 1).forEach((frame, index) => {
+                        if (index > 11) {
+                            x++
+                            if (frame.classList[1] == "down") clipboard += "⬇️"
+                            else if (frame.classList[1] == "correct") clipboard += "🟩"
+                            else if (frame.classList[1] == "up") clipboard += "⬆️"
+                            else if (frame.classList[1] == "incorrect") clipboard += "🟥"
+                            else if (frame.classList[1] == "previous") clipboard += "🟧"
+                            if (x == 6) {
+                                x = 0
+                                clipboard += "<br>"
+                            }
+                        }
+                    })
+                    document.getElementById("copyable").innerHTML = clipboard
+                }, 1250)
             }
 
             // Set the date we're counting down to
