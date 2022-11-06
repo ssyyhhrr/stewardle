@@ -9,6 +9,9 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
+  <a href="https://github.com/othneildrew/Best-README-Template">
+    <img src="https://sy.hr/files/alpha-wordle-icon-new-square320-v3%20%281%29%20%281%29.png" alt="Logo" width="80" height="80">
+  </a>
   <h3 align="center">Stewardle</h3>
 
   <p align="center">
