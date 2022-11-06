@@ -67,7 +67,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [https://sy.hr/](https://sy.hr/) - mail@rhysbi.shop
+Rhys Bishop - [https://sy.hr/](https://sy.hr/) - mail@rhysbi.shop
 
 Project Link: [https://github.com/ssyyhhrr/stewardle](https://github.com/ssyyhhrr/stewardle)
 
