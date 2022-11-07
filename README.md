@@ -15,7 +15,7 @@
   <h3 align="center">Stewardle</h3>
 
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Ergast API. Created with Express and Node.js.
     <br />
     <a href="https://stewardle.com/">View Demo</a>
     ·
