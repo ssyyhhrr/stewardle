@@ -7,7 +7,7 @@ function autocomplete(inp, arr) {
     the text field element and an array of possible autocompleted values:*/
     var currentFocus;
     /*execute a function when someone writes in the text field:*/
-    inp.addEventListener("input", function (e) {
+    inp.addEventListener("input", function () {
         var a, b, i, val = this.value;
         /*close any already open lists of autocompleted values*/
         closeAllLists();
@@ -24,9 +24,9 @@ function autocomplete(inp, arr) {
             let s1 = arr[i].split(" ")[0]
             let s2 = arr[i].split(" ")[1]
             /*check if the item starts with the same letters as the text field value:*/
-            if (s1.substr(0, val.length).toUpperCase() == val.toUpperCase() || s2.substr(0, val.length).toUpperCase() == val.toUpperCase() || arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-                let first = s1.substr(0, val.length).toUpperCase() == val.toUpperCase()
-                let second = s2.substr(0, val.length).toUpperCase() == val.toUpperCase()
+            if (s1.substr(0, val.length).toUpperCase() === val.toUpperCase() || s2.substr(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].substr(0, val.length).toUpperCase() === val.toUpperCase()) {
+                let first = s1.substr(0, val.length).toUpperCase() === val.toUpperCase()
+                let second = s2.substr(0, val.length).toUpperCase() === val.toUpperCase()
                 /*create a DIV element for each matching element:*/
                 b = document.createElement("DIV");
                 /*make the matching letters bold:*/
@@ -42,7 +42,7 @@ function autocomplete(inp, arr) {
                 /*insert a input field that will hold the current array item's value:*/
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                 /*execute a function when someone clicks on the item value (DIV element):*/
-                b.addEventListener("click", function (e) {
+                b.addEventListener("click", function () {
                     /*insert the value for the autocomplete text field:*/
                     inp.value = this.getElementsByTagName("input")[0].value;
                     /*close the list of autocompleted values,
@@ -58,19 +58,19 @@ function autocomplete(inp, arr) {
     inp.addEventListener("keydown", function (e) {
         var x = document.getElementById(this.id + "autocomplete-list");
         if (x) x = x.getElementsByTagName("div");
-        if (e.keyCode == 40) {
+        if (e.keyCode === 40) {
             /*If the arrow DOWN key is pressed,
             increase the currentFocus variable:*/
             currentFocus++;
             /*and and make the current item more visible:*/
             addActive(x);
-        } else if (e.keyCode == 38) { //up
+        } else if (e.keyCode === 38) { //up
             /*If the arrow UP key is pressed,
             decrease the currentFocus variable:*/
             currentFocus--;
             /*and and make the current item more visible:*/
             addActive(x);
-        } else if (e.keyCode == 13) {
+        } else if (e.keyCode === 13) {
             /*If the ENTER key is pressed, prevent the form from being submitted,*/
             e.preventDefault();
             if (currentFocus > -1) {
@@ -100,7 +100,7 @@ function autocomplete(inp, arr) {
         except the one passed as an argument:*/
         var x = document.getElementsByClassName("autocomplete-items");
         for (var i = 0; i < x.length; i++) {
-            if (elmnt != x[i] && elmnt != inp) {
+            if (elmnt !== x[i] && elmnt !== inp) {
                 x[i].parentNode.removeChild(x[i]);
             }
         }
@@ -121,8 +121,14 @@ document.addEventListener("keyup", async function (event) {
 });
 
 function enter() {
+    let utc = new Date()
+    let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
+    let expire = new Date(JSON.parse(localStorage.guesses)[0])
+    if (expire <= d) {
+        location.reload()
+    }
     let value = document.getElementById("myInput").value
-    if (value != "") {
+    if (value !== "") {
         let potential = 0
         let lower = 0
         let top = 0
@@ -137,7 +143,7 @@ function enter() {
             }
         })
 
-        if (potential == 1 || document.getElementsByClassName("autocomplete-items")[0].children.length == 1 && value.replace(/[0-9]/g, '') != "") {
+        if (potential === 1 || document.getElementsByClassName("autocomplete-items")[0].children.length === 1 && value.replace(/[0-9]/g, '') !== "") {
             if (localStorage.guesses == null) {
                 let d = new Date()
                 localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
@@ -175,15 +181,15 @@ function pulse() {
 
 async function submit(guess, real) {
     localStorage.first = false
-    return new Promise(async (res, rej) => {
+    return new Promise(async (res) => {
         let obj = {}
         Object.entries(driversObj).forEach(driver => {
-            if (driver[1].firstName + " " + driver[1].lastName == guess) obj = driver[1]
+            if (driver[1].firstName + " " + driver[1].lastName === guess) obj = driver[1]
         })
-        let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0)
+        let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0)
         frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
-        frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[0 + 3]}.svg">`
-        frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp">`
+        frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[3]}.svg" alt="Flag">`
+        frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp" alt="Team">`
         for (let i = 2; i < 6; i++) {
             frames[i + 1].innerHTML = `<div class="guess text">${Object.values(obj)[i + 3]}</div>`
         }
@@ -191,17 +197,17 @@ async function submit(guess, real) {
         let json = await answer.json()
         let won = true
         Object.values(json).forEach(async (answer, index) => {
-            if (answer != 1) won = false
+            if (answer !== 1) won = false
             setTimeout(() => {
-                if (answer == 0) frames[index + 1].classList.add("down")
-                else if (answer == 1) frames[index + 1].classList.add("correct")
-                else if (answer == 2) frames[index + 1].classList.add("up")
-                else if (answer == 3) frames[index + 1].classList.add("incorrect")
-                else if (answer == 4) frames[index + 1].classList.add("previous")
+                if (answer === 0) frames[index + 1].classList.add("down")
+                else if (answer === 1) frames[index + 1].classList.add("correct")
+                else if (answer === 2) frames[index + 1].classList.add("up")
+                else if (answer === 3) frames[index + 1].classList.add("incorrect")
+                else if (answer === 4) frames[index + 1].classList.add("previous")
             }, index * 250)
         })
-        if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length == 0) {
-            let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+        if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length === 0) {
+            let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length / 7))
             if (real) {
                 if (localStorage.stats == null) {
                     localStorage.stats = JSON.stringify([0, 0, 0, 0, 0])
@@ -238,7 +244,7 @@ async function submit(guess, real) {
             bars.forEach((bar, index) => {
                 let width = scores[index] / highest * 100
                 document.getElementById(bar).style.width = `${width}%`
-                if (width == 0) document.getElementById(bar).style.backgroundColor = "#171717"
+                if (width === 0) document.getElementById(bar).style.backgroundColor = "#171717"
             })
             let categories = ["played", "won", "lost", "streak", "max"]
             categories.forEach((category, index) => {
@@ -268,19 +274,19 @@ async function submit(guess, real) {
                     }
                 }
                 setTimeout(() => {
-                    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+                    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length / 7))
                     let gameNumber = Math.floor((Date.now() - 1655769600000) / 86400000)
                     let clipboard = `Stewardle ${gameNumber} ${attempts}/6<br><br>`
                     let x = 0
                     Array.from(document.getElementsByClassName("frame")).filter(x => x.classList.length > 1).forEach((frame, index) => {
                         if (index > 11) {
                             x++
-                            if (frame.classList[1] == "down") clipboard += "⬇️"
-                            else if (frame.classList[1] == "correct") clipboard += "🟩"
-                            else if (frame.classList[1] == "up") clipboard += "⬆️"
-                            else if (frame.classList[1] == "incorrect") clipboard += "🟥"
-                            else if (frame.classList[1] == "previous") clipboard += "🟧"
-                            if (x == 6) {
+                            if (frame.classList[1] === "down") clipboard += "⬇️"
+                            else if (frame.classList[1] === "correct") clipboard += "🟩"
+                            else if (frame.classList[1] === "up") clipboard += "⬆️"
+                            else if (frame.classList[1] === "incorrect") clipboard += "🟥"
+                            else if (frame.classList[1] === "previous") clipboard += "🟧"
+                            if (x === 6) {
                                 x = 0
                                 clipboard += "<br>"
                             }
@@ -337,7 +343,7 @@ function similarity(s1, s2) {
         shorter = s1;
     }
     var longerLength = longer.length;
-    if (longerLength == 0) {
+    if (longerLength === 0) {
         return 1.0;
     }
     return (longer.toLowerCase().includes(shorter.toLowerCase())) ? (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength) : 0;
@@ -347,16 +353,16 @@ function editDistance(s1, s2) {
     s1 = s1.toLowerCase();
     s2 = s2.toLowerCase();
 
-    var costs = new Array();
+    var costs = []
     for (var i = 0; i <= s1.length; i++) {
         var lastValue = i;
         for (var j = 0; j <= s2.length; j++) {
-            if (i == 0)
+            if (i === 0)
                 costs[j] = j;
             else {
                 if (j > 0) {
                     var newValue = costs[j - 1];
-                    if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                    if (s1.charAt(i - 1) !== s2.charAt(j - 1))
                         newValue = Math.min(Math.min(newValue, lastValue),
                             costs[j]) + 1;
                     costs[j - 1] = lastValue;
@@ -423,19 +429,19 @@ function close(element) {
 }
 
 function copy() {
-    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length == 0).length / 7))
+    let attempts = (6 - (Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length / 7))
     let gameNumber = Math.floor((Date.now() - 1655769600000) / 86400000)
     let clipboard = `Stewardle ${gameNumber} ${attempts}/6\n\n`
     let x = 0
     Array.from(document.getElementsByClassName("frame")).filter(x => x.classList.length > 1).forEach((frame, index) => {
         if (index > 11) {
             x++
-            if (frame.classList[1] == "down") clipboard += "⬇️"
-            else if (frame.classList[1] == "correct") clipboard += "🟩"
-            else if (frame.classList[1] == "up") clipboard += "⬆️"
-            else if (frame.classList[1] == "incorrect") clipboard += "🟥"
-            else if (frame.classList[1] == "previous") clipboard += "🟧"
-            if (x == 6) {
+            if (frame.classList[1] === "down") clipboard += "⬇️"
+            else if (frame.classList[1] === "correct") clipboard += "🟩"
+            else if (frame.classList[1] === "up") clipboard += "⬆️"
+            else if (frame.classList[1] === "incorrect") clipboard += "🟥"
+            else if (frame.classList[1] === "previous") clipboard += "🟧"
+            if (x === 6) {
                 x = 0
                 clipboard += "\n"
             }
@@ -444,7 +450,7 @@ function copy() {
     navigator.clipboard.writeText(clipboard)
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
     fetch(`${window.location.href}/drivers.json`).then(res => {
         res.json().then(result => {
             driversObj = result

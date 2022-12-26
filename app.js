@@ -194,8 +194,12 @@ function server() {
     })
 
     app.get("/stats", (req, res) => {
-        let rawStatsFile = fs.readFileSync(statsPath)
-        res.json(JSON.parse(rawStatsFile))
+        if (fs.existsSync(statsPath)) {
+            let rawStatsFile = fs.readFileSync(statsPath)
+            res.json(JSON.parse(rawStatsFile))
+        } else {
+            res.json(stats)
+        }
     })
 
     app.get("/winner", (req, res) => {
