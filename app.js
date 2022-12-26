@@ -6,6 +6,8 @@ const express = require("express")
 const favicon = require("serve-favicon")
 const morgan = require("morgan")
 
+const path = "./assets/drivers.json"
+
 const flag = {
     "British": "gb",
     "Spanish": "es",
@@ -61,24 +63,28 @@ let year = new Date().getFullYear()
 main()
 
 schedule.scheduleJob("0 0 * * *", async () => {
-    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async res => {
+    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
         await updateDrivers()
         dotd()
-    }).catch(e => {
+    }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        let data = fs.readFileSync("./assets/drivers.json")
-        drivers = JSON.parse(data)
-        dotd()
+        if (fs.existsSync(path)) {
+            let data = fs.readFileSync(path)
+            drivers = JSON.parse(data)
+            dotd()
+        } else {
+            throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
+        }
     })
 })
 
 async function main() {
-    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async res => {
+    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
         await updateDrivers()
         dotd()
-    }).catch(e => {
+    }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        let data = fs.readFileSync("./assets/drivers.json")
+        let data = fs.readFileSync(path)
         drivers = JSON.parse(data)
         dotd()
     })
@@ -161,7 +167,7 @@ function server() {
     })
 
     app.get("/winner", (req, res) => {
-        if (req.headers.authorization != "Bearer kRyX3RYMRY$&yEc8") return res.end()
+        if (req.headers.authorization !== "Bearer kRyX3RYMRY$&yEc8") return res.end()
         res.json({
             "winner": drivers[driver].firstName + " " + drivers[driver].lastName
         })
@@ -172,38 +178,38 @@ function server() {
         let search = false
         let response = []
         for (let query in drivers) {
-            if (req.query.driver == drivers[query].firstName + " " + drivers[query].lastName) {
+            if (req.query.driver === drivers[query].firstName + " " + drivers[query].lastName) {
                 search = true
                 let guess = drivers[query]
                 let actual = drivers[driver]
 
                 // nationality
-                if (guess.nationality == actual.nationality) response.push(1) // correct nationality
+                if (guess.nationality === actual.nationality) response.push(1) // correct nationality
                 else response.push(3) // incorrect nationality
 
                 // constructors
-                if (guess.constructors[guess.constructors.length - 1] == actual.constructors[actual.constructors.length - 1]) response.push(1) // correct constructor
+                if (guess.constructors[guess.constructors.length - 1] === actual.constructors[actual.constructors.length - 1]) response.push(1) // correct constructor
                 else if (actual.constructors.includes(guess.constructors[guess.constructors.length - 1])) response.push(4) // previous constructor
                 else response.push(3) // incorrect constructor
 
                 // permanent number
                 if (parseInt(guess.permanentNumber) > parseInt(actual.permanentNumber)) response.push(0) // go down
-                else if (parseInt(guess.permanentNumber) == parseInt(actual.permanentNumber)) response.push(1) // stay the same
+                else if (parseInt(guess.permanentNumber) === parseInt(actual.permanentNumber)) response.push(1) // stay the same
                 else if (parseInt(guess.permanentNumber) < parseInt(actual.permanentNumber)) response.push(2) // go up
 
                 // age
                 if (parseInt(guess.age) > parseInt(actual.age)) response.push(0) // go down
-                else if (parseInt(guess.age) == parseInt(actual.age)) response.push(1) // stay the same
+                else if (parseInt(guess.age) === parseInt(actual.age)) response.push(1) // stay the same
                 else if (parseInt(guess.age) < parseInt(actual.age)) response.push(2) // go up
 
                 // first year
                 if (parseInt(guess.firstYear) > parseInt(actual.firstYear)) response.push(0) // go down
-                else if (parseInt(guess.firstYear) == parseInt(actual.firstYear)) response.push(1) // stay the same
+                else if (parseInt(guess.firstYear) === parseInt(actual.firstYear)) response.push(1) // stay the same
                 else if (parseInt(guess.firstYear) < parseInt(actual.firstYear)) response.push(2) // go up
 
                 // wins
                 if (parseInt(guess.wins) > parseInt(actual.wins)) response.push(0) // go down
-                else if (parseInt(guess.wins) == parseInt(actual.wins)) response.push(1) // stay the same
+                else if (parseInt(guess.wins) === parseInt(actual.wins)) response.push(1) // stay the same
                 else if (parseInt(guess.wins) < parseInt(actual.wins)) response.push(2) // go up
             }
         }
