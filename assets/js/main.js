@@ -121,11 +121,13 @@ document.addEventListener("keyup", async function (event) {
 });
 
 function enter() {
-    let utc = new Date()
-    let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
-    let expire = new Date(JSON.parse(localStorage.guesses)[0])
-    if (expire <= d) {
-        location.reload()
+    if (localStorage.guesses) {
+        let utc = new Date()
+        let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
+        let expire = new Date(JSON.parse(localStorage.guesses)[0])
+        if (expire <= d) {
+            location.reload()
+        }
     }
     let value = document.getElementById("myInput").value
     if (value !== "") {
