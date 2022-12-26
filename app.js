@@ -5,8 +5,10 @@ const schedule = require("node-schedule")
 const express = require("express")
 const favicon = require("serve-favicon")
 const morgan = require("morgan")
+const dayjs = require("dayjs")
 
-const path = "./assets/drivers.json"
+const driversPath = "./assets/drivers.json"
+const statsPath = "./assets/stats.json"
 
 const flag = {
     "British": "gb",
@@ -55,6 +57,11 @@ const team = {
     "Ferrari": "ferrari"
 }
 
+let stats = {
+    "visits": 0,
+    "guesses": 0
+}
+
 let drivers = {}
 let driver
 
@@ -68,14 +75,24 @@ schedule.scheduleJob("0 0 * * *", async () => {
         dotd()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        if (fs.existsSync(path)) {
-            let data = fs.readFileSync(path)
+        if (fs.existsSync(driversPath)) {
+            let data = fs.readFileSync(driversPath)
             drivers = JSON.parse(data)
             dotd()
         } else {
             throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
         }
     })
+    let rawStatsFile = fs.readFileSync(statsPath)
+    let statsFile = JSON.parse(rawStatsFile)
+    let date = dayjs.format("YYYY-MM-DD")
+    statsFile[date] = stats
+    let newStatsFile = JSON.stringify(statsFile)
+    fs.writeFileSync(statsPath, newStatsFile)
+    stats = {
+        "visits": 0,
+        "guesses": 0
+    }
 })
 
 async function main() {
@@ -84,9 +101,13 @@ async function main() {
         dotd()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        let data = fs.readFileSync(path)
-        drivers = JSON.parse(data)
-        dotd()
+        if (fs.existsSync(driversPath)) {
+            let data = fs.readFileSync(driversPath)
+            drivers = JSON.parse(data)
+            dotd()
+        } else {
+            throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
+        }
     })
     server()
 }
@@ -164,6 +185,12 @@ function server() {
 
     app.get("/", (req, res) => {
         res.render("index")
+        stats.visits++
+    })
+
+    app.get("/stats", (req, res) => {
+        let rawStatsFile = fs.readFileSync(statsPath)
+        res.json(JSON.parse(rawStatsFile))
     })
 
     app.get("/winner", (req, res) => {
@@ -222,6 +249,7 @@ function server() {
             "firstYear": response[4],
             "wins": response[5]
         })
+        stats.guesses++
     })
 
     let port = 3000
