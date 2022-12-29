@@ -3,7 +3,7 @@
 }
 
 h1 {
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     text-transform: uppercase;
     color: #fff;
     font-size: 4em;
@@ -12,7 +12,7 @@ h1 {
 }
 
 h2 {
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     color: #fff;
     font-size: 2em;
     text-align: center;
@@ -20,7 +20,7 @@ h2 {
 }
 
 h3 {
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     color: #fff;
     font-size: 1.75em;
     text-align: center;
@@ -29,7 +29,7 @@ h3 {
 }
 
 h4 {
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     color: #fff;
     font-size: 1.5em;
     text-align: center;
@@ -38,7 +38,7 @@ h4 {
 }
 
 h5 {
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     color: #fff;
     font-size: 1.25em;
     text-align: center;
@@ -74,7 +74,6 @@ body {
 }
 
 input {
-    border: 1px solid transparent;
     background-color: #171717;
     padding: 10px;
     font-size: 16px;
@@ -160,7 +159,7 @@ input[type=text] {
 }
 
 .header {
-    outline: 0px !important;
+    outline: 0 !important;
     vertical-align: bottom;
     background-color: transparent !important;
 }
@@ -180,7 +179,7 @@ input[type=text] {
     margin-left: auto;
     margin-right: auto;
     color: white;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
 }
 
 .tutorial .text {
@@ -192,7 +191,7 @@ input[type=text] {
     margin-left: auto;
     margin-right: auto;
     color: white;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
 }
 
 .shareScreen .text {
@@ -204,28 +203,27 @@ input[type=text] {
     margin-left: auto;
     margin-right: auto;
     color: white;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
 }
 
 .credits {
     color: white;
     position: absolute;
     text-align: center;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     left: 50%;
     bottom: 1em;
-    -webkit-transform: translateX(-50%);
     transform: translateX(-50%)
 }
 
 .tutorial p {
     color: white;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
 }
 
 .shareScreen p {
     color: white;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
 }
 
 .credits p {
@@ -361,7 +359,7 @@ p a:hover {
     padding: 10px;
     font-size: 16px;
     border: 2px solid #3a3a3c;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     color: #fff;
 }
 
@@ -401,7 +399,7 @@ p a:hover {
     text-align: right;
     background-color: #508b53;
     color: #fff;
-    font-family: "FormulaOne";
+    font-family: "FormulaOne", sans-serif;
     vertical-align: middle;
     padding-right: 5px;
 }
@@ -431,12 +429,12 @@ p a:hover {
 
 .down {
     background-color: #b042ff;
-    border-radius: 0px 0px 36% 36%;
+    border-radius: 0 0 36% 36%;
 }
 
 .up {
     background-color: #e78f3a;
-    border-radius: 36% 36% 0px 0px;
+    border-radius: 36% 36% 0 0;
 }
 
 .tutorial .flag {
@@ -451,7 +449,8 @@ p a:hover {
 }
 
 .team {
-    width: 55px;
+    max-width: 55px;
+    max-height: 55px;
     padding: 5px;
     position: absolute;
     top: 50%;
