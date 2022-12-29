@@ -210,9 +210,9 @@ input[type=text] {
     color: white;
     position: absolute;
     text-align: center;
+    bottom: 1em;
     font-family: "FormulaOne", sans-serif;
     left: 50%;
-    bottom: 1em;
     transform: translateX(-50%)
 }
 
@@ -267,6 +267,7 @@ p a:hover {
     padding: 1.6em;
     transition: all 0.5s;
     opacity: 0;
+    overflow-x: auto;
 }
 
 .shareScreen {
@@ -462,7 +463,34 @@ p a:hover {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    padding-bottom: 100px;
     width: 380px;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffffff;
+    border-radius: 9999px;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 0.25rem;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ffffffd0;
+    border-radius: 9999px;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 0.25rem;
+    background-clip: padding-box;
 }
 
 @keyframes shake {

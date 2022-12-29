@@ -180,6 +180,8 @@ function getAge(dateString) {
 function server() {
     var app = express()
 
+    app.enable("trust proxy")
+
     app.use(express.urlencoded({ extended: true }))
     app.use(express.static("assets"))
     app.use(favicon('assets/favicon.ico'))
