@@ -83,13 +83,8 @@ schedule.scheduleJob("0 0 * * *", async () => {
             throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
         }
     })
-    let statsFile
-    if (fs.existsSync(statsPath)) {
-        let rawStatsFile = fs.readFileSync(statsPath)
-        statsFile = JSON.parse(rawStatsFile)
-    } else {
-        statsFile = {}
-    }
+    let rawStatsFile = fs.readFileSync(statsPath)
+    let statsFile = JSON.parse(rawStatsFile)
     let date = dayjs.format("YYYY-MM-DD")
     statsFile[date] = stats
     let newStatsFile = JSON.stringify(statsFile)
@@ -196,12 +191,8 @@ function server() {
     })
 
     app.get("/stats", (req, res) => {
-        if (fs.existsSync(statsPath)) {
-            let rawStatsFile = fs.readFileSync(statsPath)
-            res.json(JSON.parse(rawStatsFile))
-        } else {
-            res.json(stats)
-        }
+        let rawStatsFile = fs.readFileSync(statsPath)
+        res.json(JSON.parse(rawStatsFile))
     })
 
     app.get("/winner", (req, res) => {
