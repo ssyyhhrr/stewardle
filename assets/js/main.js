@@ -197,6 +197,16 @@ async function submit(guess, real) {
         }
         let answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
         let json = await answer.json()
+        if (localStorage.version) {
+            if (localStorage.version !== json.version) {
+                localStorage.removeItem("guesses")
+                localStorage.removeItem("version")
+                location.reload()
+            }
+        }
+        else {
+            localStorage.version = json.version
+        }
         let won = true
         Object.values(json).forEach(async (answer, index) => {
             if (answer !== 1) won = false
@@ -466,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let expire = new Date(JSON.parse(localStorage.guesses)[0])
                 if (expire <= d) {
                     localStorage.removeItem("guesses")
+                    localStorage.removeItem("version")
                 }
                 JSON.parse(localStorage.guesses).forEach(async (guess, index) => {
                     if (index > 0) await submit(guess, false)

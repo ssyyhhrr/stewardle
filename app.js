@@ -6,6 +6,9 @@ const express = require("express")
 const favicon = require("serve-favicon")
 const morgan = require("morgan")
 const dayjs = require("dayjs")
+const {v4: uuidv4} = require("uuid")
+
+const version = uuidv4()
 
 const driversPath = "./assets/drivers.json"
 const statsPath = "./assets/stats.json"
@@ -99,17 +102,18 @@ async function main() {
     axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
         await updateDrivers()
         dotd()
+        server()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
         if (fs.existsSync(driversPath)) {
             let data = fs.readFileSync(driversPath)
             drivers = JSON.parse(data)
             dotd()
+            server()
         } else {
             throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
         }
     })
-    server()
 }
 
 async function updateDrivers() {
@@ -249,7 +253,8 @@ function server() {
             "permanentNumber": response[2],
             "age": response[3],
             "firstYear": response[4],
-            "wins": response[5]
+            "wins": response[5],
+            "version": version
         })
         stats.guesses++
     })

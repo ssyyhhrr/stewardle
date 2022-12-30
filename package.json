@@ -17,6 +17,7 @@
     "morgan": "^1.10.0",
     "node-schedule": "^2.1.0",
     "serve-favicon": "^2.5.0",
+    "uuid": "^9.0.0",
     "xml-js": "^1.6.11"
   }
 }
