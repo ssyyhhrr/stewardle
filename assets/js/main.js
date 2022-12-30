@@ -207,6 +207,7 @@ async function submit(guess, real) {
         else {
             localStorage.version = json.version
         }
+        delete json.version
         let won = true
         Object.values(json).forEach(async (answer, index) => {
             if (answer !== 1) won = false
