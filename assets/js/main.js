@@ -273,7 +273,7 @@ async function submit(guess, real) {
             if (gg != null) {
                 gg.classList.remove("input")
                 gg.classList.add("gg")
-                let greeting = won ? "Well Done!" : "Bwoah."
+                let greeting = won ? "Grazie Ragazzi!" : "Bwoah."
                 gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
                 document.getElementsByClassName("btn")[1].onmousedown = () => {
                     open(document.getElementsByClassName("shareScreen")[0])
