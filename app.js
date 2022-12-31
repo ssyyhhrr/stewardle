@@ -88,7 +88,7 @@ schedule.scheduleJob("0 0 * * *", async () => {
     })
     let rawStatsFile = fs.readFileSync(statsPath)
     let statsFile = JSON.parse(rawStatsFile)
-    let date = dayjs.format("YYYY-MM-DD")
+    let date = dayjs().format("YYYY-MM-DD")
     statsFile[date] = stats
     let newStatsFile = JSON.stringify(statsFile)
     fs.writeFileSync(statsPath, newStatsFile)
