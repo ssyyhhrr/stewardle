@@ -66,6 +66,7 @@ let stats = {
 }
 
 let drivers = {}
+let pastDrivers = []
 let driver
 
 let year = new Date().getFullYear()
@@ -160,6 +161,13 @@ async function updateDrivers() {
 function dotd() {
     console.log("Selecting Driver of the Day...")
     driver = getRandomProperty(drivers)
+    if (pastDrivers.includes(driver)) {
+        console.log("Driver was picked recently, re-selecting...")
+        dotd()
+        return
+    }
+    pastDrivers.push(driver)
+    if (pastDrivers.length > 7) pastDrivers.shift()
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
 }
