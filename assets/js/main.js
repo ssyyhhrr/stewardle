@@ -24,20 +24,20 @@ function autocomplete(inp, arr) {
             let s1 = arr[i][0]
             let s2 = arr[i][1]
             /*check if the item starts with the same letters as the text field value:*/
-            if (s1.substring(0, val.length).toUpperCase() === val.toUpperCase() || s2.substring(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].join(" ").substring(0, val.length).toUpperCase() === val.toUpperCase()) {
-                let first = s1.substring(0, val.length).toUpperCase() === val.toUpperCase()
-                let second = s2.substring(0, val.length).toUpperCase() === val.toUpperCase()
+            if (s1.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, val.length).toUpperCase() === val.toUpperCase() || s2.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, val.length).toUpperCase() === val.toUpperCase()) {
+                let first = s1.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, val.length).toUpperCase() === val.toUpperCase()
+                let second = s2.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, val.length).toUpperCase() === val.toUpperCase()
                 /*create a DIV element for each matching element:*/
                 b = document.createElement("DIV")
                 /*make the matching letters bold:*/
                 if (first) {
-                    b.innerHTML = "<strong>" + s1.substr(0, val.length) + "</strong>" + s1.substr(val.length) + " " + s2;
+                    b.innerHTML = "<strong>" + s1.substring(0, val.length) + "</strong>" + s1.substring(val.length) + " " + s2;
                 } else if (second) {
-                    b.innerHTML = s1 + " <strong>" + s2.substr(0, val.length) + "</strong>";
-                    b.innerHTML += s2.substr(val.length);
+                    b.innerHTML = s1 + " <strong>" + s2.substring(0, val.length) + "</strong>";
+                    b.innerHTML += s2.substring(val.length);
                 } else {
-                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                    b.innerHTML += arr[i].substr(val.length);
+                    b.innerHTML = "<strong>" + arr[i].join(" ").substring(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].join(" ").substring(val.length);
                 }
                 /*insert a input field that will hold the current array item's value:*/
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
