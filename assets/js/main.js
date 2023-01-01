@@ -21,10 +21,10 @@ function autocomplete(inp, arr) {
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
-            let s1 = arr[i].split(" ")[0]
-            let s2 = arr[i].split(" ")[1]
+            let s1 = arr[i][0]
+            let s2 = arr[i][1]
             /*check if the item starts with the same letters as the text field value:*/
-            if (s1.substr(0, val.length).toUpperCase() === val.toUpperCase() || s2.substr(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].substr(0, val.length).toUpperCase() === val.toUpperCase()) {
+            if (s1.substr(0, val.length).toUpperCase() === val.toUpperCase() || s2.substr(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].join(" ").substr(0, val.length).toUpperCase() === val.toUpperCase()) {
                 let first = s1.substr(0, val.length).toUpperCase() === val.toUpperCase()
                 let second = s2.substr(0, val.length).toUpperCase() === val.toUpperCase()
                 /*create a DIV element for each matching element:*/
@@ -468,9 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
         res.json().then(result => {
             driversObj = result
             Object.entries(result).forEach(driver => {
-                drivers.push(driver[1].firstName + " " + driver[1].lastName)
+                drivers.push([driver[1].firstName, driver[1].lastName])
             })
-            autocomplete(document.getElementById("myInput"), drivers);
+            autocomplete(document.getElementById("myInput"), drivers)
             if (localStorage.guesses != null) {
                 let utc = new Date()
                 let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
