@@ -120,26 +120,30 @@ async function updateDrivers() {
     drivers = {}
     for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
-        await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
-            res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
-                if (driver.Driver.driverId in drivers) {
-                    drivers[driver.Driver.driverId].wins += parseInt(driver.wins)
-                    if (!drivers[driver.Driver.driverId].constructors.includes(team[driver.Constructors[0].name])) drivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
-                } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
-                    drivers[driver.Driver.driverId] = {
-                        "firstName": driver.Driver.givenName,
-                        "lastName": driver.Driver.familyName,
-                        "code": driver.Driver.code,
-                        "nationality": flag[driver.Driver.nationality],
-                        "constructors": [team[driver.Constructors[0].name]],
-                        "permanentNumber": driver.Driver.permanentNumber,
-                        "age": getAge(driver.Driver.dateOfBirth),
-                        "firstYear": i,
-                        "wins": parseInt(driver.wins),
+        try {
+            await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
+                res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
+                    if (driver.Driver.driverId in drivers) {
+                        drivers[driver.Driver.driverId].wins += parseInt(driver.wins)
+                        if (!drivers[driver.Driver.driverId].constructors.includes(team[driver.Constructors[0].name])) drivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
+                    } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
+                        drivers[driver.Driver.driverId] = {
+                            "firstName": driver.Driver.givenName,
+                            "lastName": driver.Driver.familyName,
+                            "code": driver.Driver.code,
+                            "nationality": flag[driver.Driver.nationality],
+                            "constructors": [team[driver.Constructors[0].name]],
+                            "permanentNumber": driver.Driver.permanentNumber,
+                            "age": getAge(driver.Driver.dateOfBirth),
+                            "firstYear": i,
+                            "wins": parseInt(driver.wins),
+                        }
                     }
-                }
+                })
             })
-        })
+        } catch (e) {
+            if (i !== year) throw ""
+        }
     }
 
     if (fs.existsSync("assets/drivers.json")) {
