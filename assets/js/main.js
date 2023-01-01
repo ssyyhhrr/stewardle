@@ -24,11 +24,11 @@ function autocomplete(inp, arr) {
             let s1 = arr[i][0]
             let s2 = arr[i][1]
             /*check if the item starts with the same letters as the text field value:*/
-            if (s1.substr(0, val.length).toUpperCase() === val.toUpperCase() || s2.substr(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].join(" ").substr(0, val.length).toUpperCase() === val.toUpperCase()) {
-                let first = s1.substr(0, val.length).toUpperCase() === val.toUpperCase()
-                let second = s2.substr(0, val.length).toUpperCase() === val.toUpperCase()
+            if (s1.substring(0, val.length).toUpperCase() === val.toUpperCase() || s2.substring(0, val.length).toUpperCase() === val.toUpperCase() || arr[i].join(" ").substring(0, val.length).toUpperCase() === val.toUpperCase()) {
+                let first = s1.substring(0, val.length).toUpperCase() === val.toUpperCase()
+                let second = s2.substring(0, val.length).toUpperCase() === val.toUpperCase()
                 /*create a DIV element for each matching element:*/
-                b = document.createElement("DIV");
+                b = document.createElement("DIV")
                 /*make the matching letters bold:*/
                 if (first) {
                     b.innerHTML = "<strong>" + s1.substr(0, val.length) + "</strong>" + s1.substr(val.length) + " " + s2;
@@ -183,6 +183,7 @@ function pulse() {
 
 async function submit(guess, real) {
     localStorage.first = false
+    guess = guess.join(" ")
     return new Promise(async (res) => {
         let obj = {}
         Object.entries(driversObj).forEach(driver => {
@@ -349,13 +350,15 @@ async function submit(guess, real) {
 }
 
 function similarity(s1, s2) {
-    var longer = s1;
-    var shorter = s2;
+    s1 = s1.replace(",", " ")
+    s2 = s2.join(" ")
+    let longer = s1
+    let shorter = s2
     if (s1.length < s2.length) {
-        longer = s2;
-        shorter = s1;
+        longer = s2
+        shorter = s1
     }
-    var longerLength = longer.length;
+    let longerLength = longer.length;
     if (longerLength === 0) {
         return 1.0;
     }
