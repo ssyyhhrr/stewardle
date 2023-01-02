@@ -73,19 +73,13 @@ let year = new Date().getFullYear()
 
 main()
 
-schedule.scheduleJob("0 0 * * *", async () => {
+schedule.scheduleJob("59 23 * * *", async () => {
     axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
         await updateDrivers()
-        dotd()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        if (fs.existsSync(driversPath)) {
-            let data = fs.readFileSync(driversPath)
-            drivers = JSON.parse(data)
-            dotd()
-        } else {
-            throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
-        }
+        let data = fs.readFileSync(driversPath)
+        drivers = JSON.parse(data)
     })
     let rawStatsFile = fs.readFileSync(statsPath)
     let statsFile = JSON.parse(rawStatsFile)
@@ -97,6 +91,10 @@ schedule.scheduleJob("0 0 * * *", async () => {
         "visits": 0,
         "guesses": 0
     }
+})
+
+schedule.scheduleJob("0 0 * * *", () => {
+    dotd()
 })
 
 async function main() {
@@ -160,12 +158,13 @@ async function updateDrivers() {
 
 function dotd() {
     console.log("Selecting Driver of the Day...")
-    driver = getRandomProperty(drivers)
-    if (pastDrivers.includes(driver)) {
+    let newDriver = getRandomProperty(drivers)
+    if (pastDrivers.includes(newDriver)) {
         console.log("Driver was picked recently, re-selecting...")
         dotd()
         return
     }
+    driver = newDriver
     pastDrivers.push(driver)
     if (pastDrivers.length > 7) pastDrivers.shift()
     console.log(`Driver of the Day is ${driver}!`)
