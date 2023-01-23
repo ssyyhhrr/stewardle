@@ -247,23 +247,7 @@ async function submit(guess, real) {
             }
             let stats = JSON.parse(localStorage.stats)
             let scores = JSON.parse(localStorage.scores)
-            let bars = ["one", "two", "three", "four", "five", "six"]
-            bars.forEach((bar, index) => {
-                document.getElementById(bar).innerText = scores[index]
-            })
-            let highest = 0
-            scores.forEach(score => {
-                if (score > highest) highest = score
-            })
-            bars.forEach((bar, index) => {
-                let width = scores[index] / highest * 100
-                document.getElementById(bar).style.width = `${width}%`
-                if (width === 0) document.getElementById(bar).style.backgroundColor = "#171717"
-            })
-            let categories = ["played", "won", "lost", "streak", "max"]
-            categories.forEach((category, index) => {
-                document.getElementById(category).innerText = stats[index]
-            })
+            fillStats(stats, scores)
             let data = await fetch(`${window.location.href}winner`, {
                 headers: new Headers({
                     "Authorization": "Bearer kRyX3RYMRY$&yEc8"
@@ -275,9 +259,9 @@ async function submit(guess, real) {
                 gg.classList.remove("input")
                 gg.classList.add("gg")
                 let greeting = won ? "Grazie Ragazzi!" : "Bwoah."
-                gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
-                document.getElementsByClassName("btn")[1].onmousedown = () => {
-                    open(document.getElementsByClassName("shareScreen")[0])
+                gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div id="share-btn" class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
+                document.getElementById("share-btn").onmousedown = () => {
+                    open(document.getElementById("shareScreen"))
                     if (count) {
                         new CountUp("played", document.getElementById("played").innerText).start()
                         new CountUp("won", document.getElementById("won").innerText).start()
@@ -306,7 +290,21 @@ async function submit(guess, real) {
                             }
                         }
                     })
+                    document.getElementById("shareScreen").innerHTML += "<div class=\"score\">\n" +
+                        "            <p></p>\n" +
+                        "            <div class=\"splitter\"></div>\n" +
+                        "            <p><b>Score</b></p>\n" +
+                        "            <p id=\"copyable\"></p>\n" +
+                        "        </div>\n" +
+                        "        <div class=\"copy\">\n" +
+                        "            <div class=\"btn\"><i class=\"fa-solid fa-copy\"></i> Copy</div>\n" +
+                        "        </div>\n" +
+                        "        <p id=\"copied\"></p>"
                     document.getElementById("copyable").innerHTML = clipboard
+                    document.getElementsByClassName("btn")[0].onmousedown = () => {
+                        pulse()
+                        copy()
+                    }
                 }, 1250)
             }
 
@@ -401,7 +399,7 @@ document.getElementsByClassName("close")[0].onmousedown = () => {
 }
 
 document.getElementsByClassName("closeShare")[0].onmousedown = () => {
-    close(document.getElementsByClassName("shareScreen")[0])
+    close(document.getElementById("shareScreen"))
 }
 
 
@@ -419,9 +417,8 @@ document.getElementById("highContrast-btn").onmousedown = () => {
     }
 }
 
-document.getElementsByClassName("btn")[0].onmousedown = () => {
-    pulse()
-    copy()
+document.getElementById("stats").onmousedown = () => {
+    open(document.getElementById("shareScreen"))
 }
 
 function open(element) {
@@ -477,10 +474,39 @@ function copy() {
     navigator.clipboard.writeText(clipboard)
 }
 
+function fillStats(stats, scores) {
+    let bars = ["one", "two", "three", "four", "five", "six"]
+    bars.forEach((bar, index) => {
+        document.getElementById(bar).innerText = scores[index]
+    })
+    let highest = 0
+    scores.forEach(score => {
+        if (score > highest) highest = score
+    })
+    bars.forEach((bar, index) => {
+        let width = scores[index] / highest * 100
+        document.getElementById(bar).style.width = `${width}%`
+        if (width === 0) document.getElementById(bar).style.backgroundColor = "#171717"
+    })
+    let categories = ["played", "won", "lost", "streak", "max"]
+    categories.forEach((category, index) => {
+        document.getElementById(category).innerText = stats[index]
+    })
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem("highContrast") === null) {
         document.getElementById("highContrast").disabled = true
     }
+    if (localStorage.stats == null) {
+        localStorage.stats = JSON.stringify([0, 0, 0, 0, 0])
+    }
+    let stats = JSON.parse(localStorage.stats)
+    if (localStorage.scores == null) {
+        localStorage.scores = JSON.stringify([0, 0, 0, 0, 0, 0])
+    }
+    let scores = JSON.parse(localStorage.scores)
+    fillStats(stats, scores)
     fetch(`${window.location.href}/drivers.json`).then(res => {
         res.json().then(result => {
             driversObj = result

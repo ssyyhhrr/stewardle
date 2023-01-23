@@ -142,7 +142,11 @@ input[type=text] {
     flex: 1;
 }
 
-.info:hover {
+.info i {
+    transition: all 0.2s;
+}
+
+.info i:hover {
     color: #D3D3D3;
     cursor: pointer;
 }
