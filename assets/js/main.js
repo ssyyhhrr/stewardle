@@ -404,8 +404,19 @@ document.getElementsByClassName("closeShare")[0].onmousedown = () => {
     close(document.getElementsByClassName("shareScreen")[0])
 }
 
-document.getElementsByClassName("info")[0].onmousedown = () => {
+
+document.getElementById("tutorial").onmousedown = () => {
     open(document.getElementsByClassName("tutorial")[0])
+}
+
+document.getElementById("highContrast-btn").onmousedown = () => {
+    if (localStorage.getItem("highContrast") === null) {
+        localStorage.setItem("highContrast", "true")
+        document.getElementById("highContrast").disabled = false
+    } else {
+        localStorage.removeItem("highContrast")
+        document.getElementById("highContrast").disabled = true
+    }
 }
 
 document.getElementsByClassName("btn")[0].onmousedown = () => {
@@ -467,6 +478,9 @@ function copy() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem("highContrast") === null) {
+        document.getElementById("highContrast").disabled = true
+    }
     fetch(`${window.location.href}/drivers.json`).then(res => {
         res.json().then(result => {
             driversObj = result
