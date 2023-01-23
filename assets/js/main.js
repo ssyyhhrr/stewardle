@@ -305,6 +305,9 @@ async function submit(guess, real) {
                         pulse()
                         copy()
                     }
+                    document.getElementById("closeShare").onmousedown = () => {
+                        close(document.getElementsByClassName("shareScreen")[0])
+                    }
                 }, 1250)
             }
 
@@ -398,8 +401,8 @@ document.getElementsByClassName("close")[0].onmousedown = () => {
     close(document.getElementsByClassName("tutorial")[0])
 }
 
-document.getElementsByClassName("closeShare")[0].onmousedown = () => {
-    close(document.getElementById("shareScreen"))
+document.getElementById("closeShare").onmousedown = () => {
+    close(document.getElementsByClassName("shareScreen")[0])
 }
 
 

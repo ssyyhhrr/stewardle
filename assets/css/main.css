@@ -304,6 +304,7 @@ p a:hover {
     padding: 1.6em;
     transition: all 0.5s;
     opacity: 0;
+    overflow-x: auto;
 }
 
 .splitter {
