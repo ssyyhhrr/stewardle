@@ -578,21 +578,6 @@ p a:hover {
         font-size: 1em;
     }
 
-    .flag {
-        height: 45px;
-        width: 45px;
-    }
-
-    .team {
-        width: 45px;
-    }
-
-    .text {
-        line-height: 45px;
-        width: 45px;
-        font-size: 14px;
-    }
-
     .input {
         width: 360px;
     }
@@ -641,18 +626,18 @@ p a:hover {
     }
 
     .flag {
-        height: 35px;
-        width: 35px;
+        height: 45px;
+        width: 45px;
     }
 
     .team {
-        width: 35px;
+        width: 45px;
     }
 
     .text {
-        line-height: 35px;
-        width: 35px;
-        font-size: 12px;
+        line-height: 45px;
+        width: 45px;
+        font-size: 14px;
     }
 
     .input {
