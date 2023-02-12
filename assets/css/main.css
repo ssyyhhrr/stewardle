@@ -255,6 +255,11 @@ p a:hover {
 .row {
     display: flex;
     flex-direction: row;
+    align-items: center;
+}
+
+.tutorial .row p {
+  margin: 0;
 }
 
 .title {
@@ -400,6 +405,7 @@ p a:hover {
     height: 45px;
     width: 45px;
     margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .stats {
