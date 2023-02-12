@@ -444,6 +444,11 @@ p a:hover {
     border-radius: 18%;
 }
 
+.past {
+    background-color: #b042ff;
+    border-radius: 18%;
+}
+
 .correct {
     background-color: #508b53;
     border-radius: 18%;

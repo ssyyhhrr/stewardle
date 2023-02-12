@@ -234,6 +234,7 @@ function server() {
                 // constructors
                 if (guess.constructors[guess.constructors.length - 1] === actual.constructors[actual.constructors.length - 1]) response.push(1) // correct constructor
                 else if (actual.constructors.includes(guess.constructors[guess.constructors.length - 1])) response.push(4) // previous constructor
+                else if (guess.constructors.includes(actual.constructors[actual.constructors.length - 1])) response.push(5) // past constructor of guessed driver
                 else response.push(3) // incorrect constructor
 
                 // permanent number

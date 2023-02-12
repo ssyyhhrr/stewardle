@@ -218,6 +218,7 @@ async function submit(guess, real) {
                 else if (answer === 2) frames[index + 1].classList.add("up")
                 else if (answer === 3) frames[index + 1].classList.add("incorrect")
                 else if (answer === 4) frames[index + 1].classList.add("previous")
+                else if (answer === 5) frames[index + 1].classList.add("past")
             }, index * 250)
         })
         if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length === 0) {
