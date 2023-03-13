@@ -75,13 +75,13 @@ function autocomplete(inp, arr) {
             /*If the arrow DOWN key is pressed,
             increase the currentFocus variable:*/
             currentFocus++;
-            /*and and make the current item more visible:*/
+            /*and make the current item more visible:*/
             addActive(x);
         } else if (e.keyCode === 38) { //up
             /*If the arrow UP key is pressed,
             decrease the currentFocus variable:*/
             currentFocus--;
-            /*and and make the current item more visible:*/
+            /*and make the current item more visible:*/
             addActive(x);
         } else if (e.keyCode === 13) {
             /*If the ENTER key is pressed, prevent the form from being submitted,*/
@@ -90,6 +90,8 @@ function autocomplete(inp, arr) {
                 /*and simulate a click on the "active" item:*/
                 if (x) x[currentFocus].click();
             }
+            else if (x[0]) enter(x[0].innerText)
+            else shake()
         }
     });
     function addActive(x) {
@@ -129,11 +131,11 @@ let drivers = []
 
 document.addEventListener("keyup", async function (event) {
     if (event.keyCode === 13) {
-        enter()
+        //enter()
     }
 });
 
-function enter() {
+function enter(guess) {
     if (localStorage.guesses) {
         let utc = new Date()
         let d = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate(), 0, 0, 0))
@@ -142,43 +144,22 @@ function enter() {
             location.reload()
         }
     }
-    let value = document.getElementById("myInput").value
-    if (value !== "") {
-        let potential = 0
-        let lower = 0
-        let top = 0
-        let comparison = 0
-        let guess
-        drivers.forEach(driver => {
-            comparison = similarity(value, driver)
-            if (comparison > lower) potential++
-            if (comparison > top) {
-                top = comparison
-                guess = driver
-            }
-        })
 
-        if (potential === 1 || document.getElementsByClassName("autocomplete-items")[0].children.length === 1 && value.replace(/[0-9]/g, '') !== "") {
-            if (localStorage.guesses == null) {
-                let d = new Date()
-                localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
-            }
-            else {
-                let guesses = JSON.parse(localStorage.guesses)
-                guesses.push(guess)
-                localStorage.guesses = JSON.stringify(guesses)
-            }
-            document.getElementById("myInput").value = ""
-            var x = document.getElementsByClassName("autocomplete-items");
-            for (var i = 0; i < x.length; i++) {
-                x[i].parentNode.removeChild(x[i]);
-            }
-            submit(guess, true)
-        }
-        else {
-            shake()
-        }
+    if (localStorage.guesses == null) {
+        let d = new Date()
+        localStorage.guesses = JSON.stringify([new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0)), guess])
     }
+    else {
+        let guesses = JSON.parse(localStorage.guesses)
+        guesses.push(guess)
+        localStorage.guesses = JSON.stringify(guesses)
+    }
+    document.getElementById("myInput").value = ""
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+        x[i].parentNode.removeChild(x[i]);
+    }
+    submit(guess, true)
 }
 
 function shake() {
@@ -196,7 +177,6 @@ function pulse() {
 
 async function submit(guess, real) {
     localStorage.first = false
-    guess = guess.join(" ")
     return new Promise(async (res) => {
         let obj = {}
         Object.entries(driversObj).forEach(driver => {
