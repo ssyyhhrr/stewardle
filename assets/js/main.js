@@ -2,6 +2,19 @@ let canOpen = true
 let canClose = false
 let count = true
 
+const victoryCalls = [
+    "How About That?!",
+    "We Are The Champions!",
+    "******* Took It!",
+    "Si Ragazzi!",
+    "You Are The Best!",
+    "Yeahhaahh!",
+    "We Did It, We Did It!",
+    "Du Bist Weltmeister!",
+    "Aaahaaa Huh Huh Huh!",
+    "I Can't Believe It!"
+]
+
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
@@ -258,7 +271,7 @@ async function submit(guess, real) {
             if (gg != null) {
                 gg.classList.remove("input")
                 gg.classList.add("gg")
-                let greeting = won ? "Grazie Ragazzi!" : "Bwoah."
+                let greeting = won ? victoryCalls[Math.floor(Math.random() * victoryCalls.length)] : "Bwoah."
                 gg.innerHTML = `<h2>${greeting}</h2><div class="p"><h5>The driver was</h5><h4> ${winner.winner}!</h4></div><div class="share"><div id="share-btn" class="btn"><i class="fa-solid fa-share"></i> Share</div></div><div class="p timer"><h3>Next Stewardle</h3></div><div class="p"><h4 id="time">00:00:00:000</h4></div>`
                 document.getElementById("share-btn").onmousedown = () => {
                     open(document.getElementById("shareScreen"))
