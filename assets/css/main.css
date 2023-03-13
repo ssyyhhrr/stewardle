@@ -118,7 +118,7 @@ input[type=text] {
 }
 
 .gg {
-    padding-bottom: 5em;
+    padding-bottom: 2.5em;
 }
 
 .gg .p {
@@ -491,18 +491,25 @@ p a:hover {
 .content {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    align-items: center;
+    align-items: start;
+    min-height: 750px;
 }
 
 .vertical-ad {
     height: 600px;
     width: 160px;
+    align-self: start;
     margin: 25px auto 0px;
 }
 
 .banner-ad {
     text-align: center;
     display: none;
+    padding-bottom: 5em;
+}
+
+.game {
+    grid-column: 2;
 }
 
 ::-webkit-scrollbar {
