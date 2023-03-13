@@ -488,6 +488,23 @@ p a:hover {
     width: 380px;
 }
 
+.content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+}
+
+.vertical-ad {
+    height: 600px;
+    width: 160px;
+    margin: 25px auto 0px;
+}
+
+.banner-ad {
+    text-align: center;
+    display: none;
+}
+
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -562,6 +579,18 @@ p a:hover {
 
     h1 {
         font-size: 2.5em;
+    }
+
+    .banner-ad {
+        display: block;
+    }
+
+    .vertical-ad {
+        display: none;
+    }
+
+    .content {
+        display: block;
     }
 }
 
