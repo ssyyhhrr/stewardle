@@ -57,11 +57,10 @@ function autocomplete(inp, arr) {
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 b.addEventListener("click", function () {
                     /*insert the value for the autocomplete text field:*/
-                    inp.value = this.getElementsByTagName("input")[0].value;
+                    enter(this.getElementsByTagName("input")[0].value.replace(",", " "))
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-                    enter()
                 });
                 a.appendChild(b);
             }
@@ -129,12 +128,6 @@ function autocomplete(inp, arr) {
 let driversObj = {}
 let drivers = []
 
-document.addEventListener("keyup", async function (event) {
-    if (event.keyCode === 13) {
-        //enter()
-    }
-});
-
 function enter(guess) {
     if (localStorage.guesses) {
         let utc = new Date()
@@ -182,13 +175,6 @@ async function submit(guess, real) {
         Object.entries(driversObj).forEach(driver => {
             if (driver[1].firstName + " " + driver[1].lastName === guess) obj = driver[1]
         })
-        let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0)
-        frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
-        frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[3]}.svg" alt="Flag">`
-        frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp" alt="Team">`
-        for (let i = 2; i < 6; i++) {
-            frames[i + 1].innerHTML = `<div class="guess text">${Object.values(obj)[i + 3]}</div>`
-        }
         let answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
         let json = await answer.json()
         if (localStorage.version) {
@@ -202,6 +188,13 @@ async function submit(guess, real) {
             localStorage.version = json.version
         }
         delete json.version
+        let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0)
+        frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
+        frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[3]}.svg" alt="Flag">`
+        frames[2].innerHTML = `<img class="team" src="./logos/${Object.values(obj)[1 + 3][Object.values(obj)[1 + 3].length - 1]}.webp" alt="Team">`
+        for (let i = 2; i < 6; i++) {
+            frames[i + 1].innerHTML = `<div class="guess text">${Object.values(obj)[i + 3]}</div>`
+        }
         let won = true
         Object.values(json).forEach(async (answer, index) => {
             if (answer !== 1) won = false
