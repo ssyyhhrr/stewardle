@@ -6,12 +6,15 @@ const express = require("express")
 const favicon = require("serve-favicon")
 const morgan = require("morgan")
 const dayjs = require("dayjs")
+const process = require("process")
 const {v4: uuidv4} = require("uuid")
 
 const version = uuidv4()
 
 const driversPath = "./assets/drivers.json"
 const statsPath = "./assets/stats.json"
+const driverPath = "./assets/driver.txt"
+const pastPath = "./assets/past.json"
 
 const flag = {
     "British": "gb",
@@ -71,7 +74,23 @@ let driver
 
 let year = new Date().getFullYear()
 
-main()
+axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
+    await updateDrivers()
+}).catch(() => {
+    console.log("API is unreachable! Not updating drivers...")
+    if (fs.existsSync(driversPath)) {
+        let data = fs.readFileSync(driversPath)
+        drivers = JSON.parse(data)
+    } else {
+        throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
+    }
+}).catch(err => {
+    console.log(err)
+    return process.exit(1)
+}).then(() => {
+    dotd(true)
+    server()
+})
 
 schedule.scheduleJob("59 23 * * *", async () => {
     axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
@@ -96,24 +115,6 @@ schedule.scheduleJob("59 23 * * *", async () => {
 schedule.scheduleJob("0 0 * * *", () => {
     dotd()
 })
-
-async function main() {
-    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
-        await updateDrivers()
-        dotd()
-        server()
-    }).catch(() => {
-        console.log("API is unreachable! Not updating drivers...")
-        if (fs.existsSync(driversPath)) {
-            let data = fs.readFileSync(driversPath)
-            drivers = JSON.parse(data)
-            dotd()
-            server()
-        } else {
-            throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
-        }
-    })
-}
 
 async function updateDrivers() {
     drivers = {}
@@ -156,17 +157,21 @@ async function updateDrivers() {
     })
 }
 
-function dotd() {
+function dotd(cold = false) {
     console.log("Selecting Driver of the Day...")
-    let newDriver = getRandomProperty(drivers)
-    if (pastDrivers.includes(newDriver)) {
-        console.log("Driver was picked recently, re-selecting...")
-        dotd()
-        return
+    if (cold && fs.existsSync(driverPath)) {
+        driver = fs.readFileSync(driverPath)
+    } else {
+        let newDriver = getRandomProperty(drivers)
+        if (pastDrivers.includes(newDriver)) {
+            console.log("Driver was picked recently, re-selecting...")
+            return dotd()
+        }
+        driver = newDriver
+        pastDrivers.push(driver)
+        if (pastDrivers.length > 7) pastDrivers.shift()
+        fs.writeFileSync(driverPath, driver)
     }
-    driver = newDriver
-    pastDrivers.push(driver)
-    if (pastDrivers.length > 7) pastDrivers.shift()
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
 }
@@ -213,7 +218,7 @@ function server() {
     app.get("/winner", (req, res) => {
         if (req.headers.authorization !== "Bearer kRyX3RYMRY$&yEc8") return res.end()
         res.json({
-            "winner": drivers[driver].firstName + " " + drivers[driver].lastName
+            "winner": drivers[driver].firstName + " " + drivers[driver].lastName,
         })
     })
 

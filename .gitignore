@@ -1,4 +1,5 @@
 node_modules
 driver.txt
 drivers.json
+stats.json
 .idea

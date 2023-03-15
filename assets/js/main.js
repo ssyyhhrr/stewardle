@@ -240,6 +240,7 @@ async function submit(guess, real) {
                 })
             })
             let winner = await data.json()
+            console.log(winner)
             let gg = document.getElementsByClassName("input")[0]
             if (gg != null) {
                 gg.classList.remove("input")
