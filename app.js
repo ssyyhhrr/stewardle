@@ -13,7 +13,6 @@ const version = uuidv4()
 
 const driversPath = "./assets/drivers.json"
 const statsPath = "./assets/stats.json"
-const pastPath = "./assets/past.json"
 
 const flag = {
     "British": "gb",
@@ -69,13 +68,8 @@ let stats = {
 
 let drivers = {}
 let driver
-let pastDrivers
 
 let year = new Date().getFullYear()
-
-if (fs.existsSync(pastPath)) {
-    pastDrivers = JSON.parse(fs.readFileSync(pastPath))
-} else pastDrivers = []
 
 axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
     await updateDrivers()
@@ -100,23 +94,41 @@ schedule.scheduleJob("59 23 * * *", async () => {
         await updateDrivers()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
-        let data = fs.readFileSync(driversPath)
-        drivers = JSON.parse(data)
+        drivers = JSON.parse(fs.readFileSync(driversPath))
     })
-    let rawStatsFile = fs.readFileSync(statsPath)
-    let statsFile = JSON.parse(rawStatsFile)
-    let date = dayjs().format("YYYY-MM-DD")
-    statsFile[date] = stats
-    let newStatsFile = JSON.stringify(statsFile)
-    fs.writeFileSync(statsPath, newStatsFile)
+})
+
+schedule.scheduleJob("0 0 * * *", () => {
+    dotd()
     stats = {
         "visits": 0,
         "guesses": 0
     }
 })
 
-schedule.scheduleJob("0 0 * * *", () => {
-    dotd()
+schedule.scheduleJob("* * * * *", () => {
+    let statsFile = JSON.parse(fs.readFileSync(statsPath))
+    let date = dayjs().format("YYYY-MM-DD")
+    if (statsFile.hasOwnProperty(date)) {
+        if (statsFile[date]["visits"] < stats["visits"]) {
+            statsFile[date]["visits"] = stats["visits"]
+        } else {
+            statsFile[date]["visits"] += stats["visits"]
+            stats["visits"] = statsFile[date]["visits"]
+        }
+        if (statsFile[date]["guesses"] < stats["guesses"]) {
+            statsFile[date]["guesses"] = stats["guesses"]
+        } else {
+            statsFile[date]["guesses"] += stats["guesses"]
+            stats["guesses"] = statsFile[date]["guesses"]
+        }
+        if (!statsFile[date].hasOwnProperty("driver") && stats.hasOwnProperty("driver")) {
+            statsFile[date]["driver"] = stats["driver"]
+        }
+    } else {
+        statsFile[date] = stats
+    }
+    fs.writeFileSync(statsPath, JSON.stringify(statsFile))
 })
 
 async function updateDrivers() {
@@ -162,19 +174,21 @@ async function updateDrivers() {
 
 function dotd(cold = false) {
     console.log("Selecting Driver of the Day...")
-    if (cold && fs.existsSync(pastPath)) {
+    let pastDrivers
+    if (fs.existsSync(statsPath)) {
+        pastDrivers = Object.values(JSON.parse(fs.readFileSync(statsPath))).map(x => x.driver).filter((x) => { return typeof x === "string"})
+    }
+    if (cold && pastDrivers.length > 0) {
         driver = pastDrivers[pastDrivers.length - 1]
     } else {
         let newDriver = getRandomProperty(drivers)
-        if (pastDrivers.includes(newDriver)) {
+        if (pastDrivers.slice(-7).includes(newDriver)) {
             console.log("Driver was picked recently, re-selecting...")
             return dotd()
         }
         driver = newDriver
-        pastDrivers.push(driver)
-        if (pastDrivers.length > 7) pastDrivers.shift()
-        fs.writeFileSync(pastPath, JSON.stringify(pastDrivers))
     }
+    stats["driver"] = driver
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
 }
