@@ -85,7 +85,7 @@ axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then
     console.log(err)
     return process.exit(1)
 }).then(() => {
-    dotd(true)
+    dotd()
     server()
 })
 
@@ -100,35 +100,10 @@ schedule.scheduleJob("59 23 * * *", async () => {
 
 schedule.scheduleJob("0 0 * * *", () => {
     dotd()
-    stats = {
-        "visits": 0,
-        "guesses": 0
-    }
 })
 
 schedule.scheduleJob("* * * * *", () => {
-    let statsFile = JSON.parse(fs.readFileSync(statsPath))
-    let date = dayjs().format("YYYY-MM-DD")
-    if (statsFile.hasOwnProperty(date)) {
-        if (statsFile[date]["visits"] < stats["visits"]) {
-            statsFile[date]["visits"] = stats["visits"]
-        } else {
-            statsFile[date]["visits"] += stats["visits"]
-            stats["visits"] = statsFile[date]["visits"]
-        }
-        if (statsFile[date]["guesses"] < stats["guesses"]) {
-            statsFile[date]["guesses"] = stats["guesses"]
-        } else {
-            statsFile[date]["guesses"] += stats["guesses"]
-            stats["guesses"] = statsFile[date]["guesses"]
-        }
-        if (!statsFile[date].hasOwnProperty("driver") && stats.hasOwnProperty("driver")) {
-            statsFile[date]["driver"] = stats["driver"]
-        }
-    } else {
-        statsFile[date] = stats
-    }
-    fs.writeFileSync(statsPath, JSON.stringify(statsFile))
+    processStats()
 })
 
 async function updateDrivers() {
@@ -172,13 +147,46 @@ async function updateDrivers() {
     })
 }
 
-function dotd(cold = false) {
+function processStats() {
+    let date = dayjs().format("YYYY-MM-DD")
+    let statsFile = {}
+    if (fs.existsSync(statsPath)) {
+        statsFile = JSON.parse(fs.readFileSync(statsPath))
+        if (statsFile.hasOwnProperty(date)) {
+            if (statsFile[date]["visits"] < stats["visits"]) {
+                statsFile[date]["visits"] = stats["visits"]
+            } else {
+                statsFile[date]["visits"] += stats["visits"]
+                stats["visits"] = statsFile[date]["visits"]
+            }
+            if (statsFile[date]["guesses"] < stats["guesses"]) {
+                statsFile[date]["guesses"] = stats["guesses"]
+            } else {
+                statsFile[date]["guesses"] += stats["guesses"]
+                stats["guesses"] = statsFile[date]["guesses"]
+            }
+            if (!statsFile[date].hasOwnProperty("driver") && stats.hasOwnProperty("driver")) {
+                statsFile[date]["driver"] = stats["driver"]
+            }
+        } else {
+            statsFile[date] = stats
+        }
+    } else {
+        statsFile[date] = stats
+    }
+    fs.writeFileSync(statsPath, JSON.stringify(statsFile))
+}
+
+function dotd() {
     console.log("Selecting Driver of the Day...")
-    let pastDrivers
+    let date = dayjs().format("YYYY-MM-DD")
+    let pastDrivers = []
+    let pastDates = []
     if (fs.existsSync(statsPath)) {
         pastDrivers = Object.values(JSON.parse(fs.readFileSync(statsPath))).map(x => x.driver).filter((x) => { return typeof x === "string"})
+        pastDates = Object.keys(JSON.parse(fs.readFileSync(statsPath)))
     }
-    if (cold && pastDrivers.length > 0) {
+    if (pastDrivers.length > 0 && pastDates.length > 0 && pastDates[pastDates.length - 1] === date) {
         driver = pastDrivers[pastDrivers.length - 1]
     } else {
         let newDriver = getRandomProperty(drivers)
@@ -188,7 +196,12 @@ function dotd(cold = false) {
         }
         driver = newDriver
     }
-    stats["driver"] = driver
+    stats = {
+        "visits": 0,
+        "guesses": 0,
+        "driver": driver
+    }
+    processStats()
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
 }
