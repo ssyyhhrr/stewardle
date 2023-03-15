@@ -13,7 +13,6 @@ const version = uuidv4()
 
 const driversPath = "./assets/drivers.json"
 const statsPath = "./assets/stats.json"
-const driverPath = "./assets/driver.txt"
 const pastPath = "./assets/past.json"
 
 const flag = {
@@ -69,10 +68,14 @@ let stats = {
 }
 
 let drivers = {}
-let pastDrivers = []
 let driver
+let pastDrivers
 
 let year = new Date().getFullYear()
+
+if (fs.existsSync(pastPath)) {
+    pastDrivers = JSON.parse(fs.readFileSync(pastPath))
+} else pastDrivers = []
 
 axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
     await updateDrivers()
@@ -159,8 +162,8 @@ async function updateDrivers() {
 
 function dotd(cold = false) {
     console.log("Selecting Driver of the Day...")
-    if (cold && fs.existsSync(driverPath)) {
-        driver = fs.readFileSync(driverPath)
+    if (cold && fs.existsSync(pastPath)) {
+        driver = pastDrivers[pastDrivers.length - 1]
     } else {
         let newDriver = getRandomProperty(drivers)
         if (pastDrivers.includes(newDriver)) {
@@ -170,7 +173,7 @@ function dotd(cold = false) {
         driver = newDriver
         pastDrivers.push(driver)
         if (pastDrivers.length > 7) pastDrivers.shift()
-        fs.writeFileSync(driverPath, driver)
+        fs.writeFileSync(pastPath, JSON.stringify(pastDrivers))
     }
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
