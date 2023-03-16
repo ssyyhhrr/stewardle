@@ -147,11 +147,10 @@ async function updateDrivers() {
     })
 }
 
-function processStats() {
+function processStats(dotd = false) {
     let date = dayjs().format("YYYY-MM-DD")
-    let statsFile = {}
     if (fs.existsSync(statsPath)) {
-        statsFile = JSON.parse(fs.readFileSync(statsPath))
+        let statsFile = JSON.parse(fs.readFileSync(statsPath))
         if (statsFile.hasOwnProperty(date)) {
             if (statsFile[date]["visits"] < stats["visits"]) {
                 statsFile[date]["visits"] = stats["visits"]
@@ -168,13 +167,11 @@ function processStats() {
             if (!statsFile[date].hasOwnProperty("driver") && stats.hasOwnProperty("driver")) {
                 statsFile[date]["driver"] = stats["driver"]
             }
-        } else {
+        } else if (dotd) {
             statsFile[date] = stats
         }
-    } else {
-        statsFile[date] = stats
+        fs.writeFileSync(statsPath, JSON.stringify(statsFile))
     }
-    fs.writeFileSync(statsPath, JSON.stringify(statsFile))
 }
 
 function dotd() {
@@ -201,7 +198,7 @@ function dotd() {
         "guesses": 0,
         "driver": driver
     }
-    processStats()
+    processStats(true)
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
 }
