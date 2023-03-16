@@ -168,26 +168,13 @@ function pulse() {
     setTimeout(() => document.getElementById("copied").innerText = "Copied to clipboard!", 400)
 }
 
-async function submit(guess, real) {
+async function submit(guess, real, index = 0) {
     localStorage.first = false
     return new Promise(async (res) => {
         let obj = {}
         Object.entries(driversObj).forEach(driver => {
             if (driver[1].firstName + " " + driver[1].lastName === guess) obj = driver[1]
         })
-        let answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
-        let json = await answer.json()
-        if (localStorage.version) {
-            if (localStorage.version !== json.version) {
-                localStorage.removeItem("guesses")
-                localStorage.removeItem("version")
-                location.reload()
-            }
-        }
-        else {
-            localStorage.version = json.version
-        }
-        delete json.version
         let frames = Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0)
         frames[0].innerHTML = `<div class="guess text">${obj.code}</div>`
         frames[1].innerHTML = `<img class="flag" src="./flags/${Object.values(obj)[3]}.svg" alt="Flag">`
@@ -195,15 +182,47 @@ async function submit(guess, real) {
         for (let i = 2; i < 6; i++) {
             frames[i + 1].innerHTML = `<div class="guess text">${Object.values(obj)[i + 3]}</div>`
         }
+        let answer
+        let json
+        if (real) {
+            answer = await fetch(`${window.location.href}driver?driver=${obj.firstName + " " + obj.lastName}`)
+            json = await answer.json()
+        } else {
+            answer = localStorage.answers
+            json = JSON.parse(answer)[index]
+            json.version = localStorage.version
+        }
+        if (localStorage.version && localStorage.version !== json.version) {
+            localStorage.removeItem("guesses")
+            localStorage.removeItem("version")
+            localStorage.removeItem("answers")
+            location.reload()
+        }
+        else {
+            localStorage.version = json.version
+        }
+        delete json.version
+        if (real) {
+            if (localStorage.answers) {
+                let answers = JSON.parse(localStorage.answers)
+                answers.push(json)
+                localStorage.answers = JSON.stringify(answers)
+            } else {
+                localStorage.answers = JSON.stringify([json])
+            }
+        }
         let won = true
         Object.values(json).forEach(async (answer, index) => {
             if (answer !== 1) won = false
             setTimeout(() => {
-                if (answer === 0) frames[index + 1].classList.add("down")
-                else if (answer === 1) frames[index + 1].classList.add("correct")
-                else if (answer === 2) frames[index + 1].classList.add("up")
-                else if (answer === 3) frames[index + 1].classList.add("incorrect")
-                else if (answer === 4) frames[index + 1].classList.add("previous")
+                let definitions = {
+                    0: "down",
+                    1: "correct",
+                    2: "up",
+                    3: "incorrect",
+                    4: "previous"
+                }
+                frames[index + 1].classList.add(definitions[answer])
             }, index * 250)
         })
         if (won || Array.from(document.getElementsByClassName("frame")).filter(x => x.childNodes.length === 0).length === 0) {
@@ -240,7 +259,6 @@ async function submit(guess, real) {
                 })
             })
             let winner = await data.json()
-            console.log(winner)
             let gg = document.getElementsByClassName("input")[0]
             if (gg != null) {
                 gg.classList.remove("input")
@@ -511,9 +529,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (expire <= d) {
                     localStorage.removeItem("guesses")
                     localStorage.removeItem("version")
+                    localStorage.removeItem("answers")
                 }
                 JSON.parse(localStorage.guesses).forEach(async (guess, index) => {
-                    if (index > 0) await submit(guess, false)
+                    if (index > 0) await submit(guess, false, index - 1)
                 })
             }
             if (localStorage.first == null) open(document.getElementsByClassName("tutorial")[0])
