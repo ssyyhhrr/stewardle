@@ -148,30 +148,32 @@ async function updateDrivers() {
 }
 
 function processStats(dotd = false) {
-    let date = dayjs().format("YYYY-MM-DD")
+    const date = dayjs().format("YYYY-MM-DD");
+
+    let statsFile = {};
     if (fs.existsSync(statsPath)) {
-        let statsFile = JSON.parse(fs.readFileSync(statsPath))
-        if (statsFile.hasOwnProperty(date)) {
-            if (statsFile[date]["visits"] < stats["visits"]) {
-                statsFile[date]["visits"] = stats["visits"]
-            } else {
-                statsFile[date]["visits"] += stats["visits"]
-                stats["visits"] = statsFile[date]["visits"]
-            }
-            if (statsFile[date]["guesses"] < stats["guesses"]) {
-                statsFile[date]["guesses"] = stats["guesses"]
-            } else {
-                statsFile[date]["guesses"] += stats["guesses"]
-                stats["guesses"] = statsFile[date]["guesses"]
-            }
-            if (!statsFile[date].hasOwnProperty("driver") && stats.hasOwnProperty("driver")) {
-                statsFile[date]["driver"] = stats["driver"]
-            }
-        } else if (dotd) {
-            statsFile[date] = stats
-        }
-        fs.writeFileSync(statsPath, JSON.stringify(statsFile))
+        statsFile = JSON.parse(fs.readFileSync(statsPath));
     }
+
+    if (dotd) {
+        statsFile[date] = {
+            visits: stats.visits,
+            guesses: stats.guesses,
+            driver: stats.driver,
+        };
+    } else if (statsFile[date]) {
+        statsFile[date].visits = Math.max(statsFile[date].visits, stats.visits);
+        statsFile[date].guesses = Math.max(statsFile[date].guesses, stats.guesses);
+        statsFile[date].driver = stats.driver || statsFile[date].driver;
+    } else {
+        statsFile[date] = {
+            visits: stats.visits,
+            guesses: stats.guesses,
+            driver: stats.driver,
+        };
+    }
+
+    fs.writeFileSync(statsPath, JSON.stringify(statsFile));
 }
 
 function dotd() {
@@ -237,9 +239,8 @@ function server() {
         stats.visits++
     })
 
-    app.get("/stats", (req, res) => {
-        let rawStatsFile = fs.readFileSync(statsPath)
-        res.json(JSON.parse(rawStatsFile))
+    app.get("/version", (req, res) => {
+        res.send(version)
     })
 
     app.get("/winner", (req, res) => {

@@ -503,6 +503,17 @@ function fillStats(stats, scores) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    fetch(`${window.location.href}version`).then(res => {
+        res.text().then(result => {
+            if (result !== localStorage.version) {
+                localStorage.removeItem("guesses")
+                localStorage.removeItem("version")
+                localStorage.removeItem("answers")
+                localStorage.version = result
+                location.reload()
+            }
+        })
+    })
     if (localStorage.getItem("highContrast") === null) {
         document.getElementById("highContrast").disabled = true
     }
