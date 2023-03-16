@@ -227,9 +227,7 @@ function server() {
     app.enable("trust proxy")
 
     app.use(express.urlencoded({ extended: true }))
-    app.use(express.static("assets"), {
-        maxAge: 3600000 // uses milliseconds per docs
-    })
+    app.use(express.static("assets"))
     app.use(favicon('assets/favicon.ico'))
     app.use(morgan("combined"))
 
