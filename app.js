@@ -149,46 +149,64 @@ async function updateDrivers() {
 
 function processStats(dotd = false) {
     const date = dayjs().format("YYYY-MM-DD");
+    console.log(`[DEBUG] processStats Date is ${date}`)
 
     let statsFile = {};
     if (fs.existsSync(statsPath)) {
         statsFile = JSON.parse(fs.readFileSync(statsPath));
     }
 
-    if (dotd) {
-        statsFile[date] = {
-            visits: stats.visits,
-            guesses: stats.guesses,
-            driver: stats.driver,
-        };
-    } else if (statsFile[date]) {
-        statsFile[date].visits = Math.max(statsFile[date].visits, stats.visits);
-        statsFile[date].guesses = Math.max(statsFile[date].guesses, stats.guesses);
-        statsFile[date].driver = stats.driver || statsFile[date].driver;
-    } else {
-        statsFile[date] = {
-            visits: stats.visits,
-            guesses: stats.guesses,
-            driver: stats.driver,
-        };
-    }
+    console.log(`[DEBUG] statsFile ${statsFile}`)
 
+    if (dotd) {
+        console.log(`[DEBUG] dotd TRUE`)
+        statsFile[date] = {
+            visits: stats.visits,
+            guesses: stats.guesses,
+            driver: stats.driver,
+        };
+        console.log(`[DEBUG] statsFile[date] ${statsFile[date]}`)
+
+    } else if (statsFile.hasOwnProperty(date)) {
+        console.log(`[DEBUG] statsFile.hasOwnProperty(date) TRUE`)
+        if (statsFile[date].visits > stats.visits) {
+            console.log(`[DEBUG] statsFile[date].visits > stats.visits`)
+            statsFile[date].visits += stats.visits
+            stats.visits = statsFile[date].visits
+        }
+        else statsFile[date].visits = stats.visits
+        if (statsFile[date].guesses > stats.guesses) {
+            console.log(`[DEBUG] statsFile[date].guesses > stats.guesses`)
+            statsFile[date].guesses += stats.guesses
+            stats.guesses = statsFile[date].guesses
+        }
+        else statsFile[date].guesses = stats.guesses
+    } else return
+
+    console.log(`[DEBUG] Writing ${statsFile} to ${statsPath}`)
     fs.writeFileSync(statsPath, JSON.stringify(statsFile));
 }
 
 function dotd() {
     console.log("Selecting Driver of the Day...")
     let date = dayjs().format("YYYY-MM-DD")
+    console.log(`dotd Date is ${date}`)
     let pastDrivers = []
     let pastDates = []
     if (fs.existsSync(statsPath)) {
-        pastDrivers = Object.values(JSON.parse(fs.readFileSync(statsPath))).map(x => x.driver).filter((x) => { return typeof x === "string"})
-        pastDates = Object.keys(JSON.parse(fs.readFileSync(statsPath)))
+        let statsFile = JSON.parse(fs.readFileSync(statsPath))
+        pastDates = Object.keys(statsFile)
+        pastDrivers = Object.values(statsFile).map(x => x.driver).filter((x) => { return typeof x === "string"})
+        console.log(`[DEBUG] pastDates ${pastDates}`)
+        console.log(`[DEBUG] pastDrivers ${pastDrivers}`)
     }
     if (pastDrivers.length > 0 && pastDates.length > 0 && pastDates[pastDates.length - 1] === date) {
+        console.log(`[DEBUG] Date is TODAY`)
         driver = pastDrivers[pastDrivers.length - 1]
+        console.log(`[DEBUG] driver ${driver}`)
     } else {
         let newDriver = getRandomProperty(drivers)
+        console.log(`[DEBUG] newDriver ${newDriver}`)
         if (pastDrivers.slice(-7).includes(newDriver)) {
             console.log("Driver was picked recently, re-selecting...")
             return dotd()
@@ -200,6 +218,7 @@ function dotd() {
         "guesses": 0,
         "driver": driver
     }
+    console.log(`[DEBUG] stats ${stats}`)
     processStats(true)
     console.log(`Driver of the Day is ${driver}!`)
     console.log(drivers[driver])
