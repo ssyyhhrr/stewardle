@@ -226,7 +226,14 @@ function server() {
     app.enable("trust proxy")
 
     app.use(express.urlencoded({ extended: true }))
-    app.use(express.static("assets"))
+    app.use(express.static("assets", {
+        setHeaders: function(res, path, stat) {
+            // Set cache control headers
+            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.set('Pragma', 'no-cache');
+            res.set('Expires', '0');
+        }
+    }))
     app.use(favicon('assets/favicon.ico'))
     app.use(morgan("combined"))
 

@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     let scores = JSON.parse(localStorage.scores)
     fillStats(stats, scores)
-    fetch(`${window.location.href}/drivers.json?nocache=${new Date().getTime()}`).then(res => {
+    fetch(`${window.location.href}/drivers.json`).then(res => {
         res.json().then(result => {
             driversObj = result
             Object.entries(result).forEach(driver => {
