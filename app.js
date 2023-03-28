@@ -189,7 +189,7 @@ function dotd() {
         driver = pastDrivers[pastDrivers.length - 1]
     } else {
         let newDriver = getRandomProperty(drivers)
-        while (pastDrivers.slice(-7).includes(newDriver)) {
+        while (pastDrivers.slice(-14).includes(newDriver)) {
             newDriver = getRandomProperty(drivers)
         }
         driver = newDriver
