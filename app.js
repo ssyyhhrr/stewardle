@@ -7,9 +7,6 @@ const favicon = require("serve-favicon")
 const morgan = require("morgan")
 const dayjs = require("dayjs")
 const process = require("process")
-const {v4: uuidv4} = require("uuid")
-
-const version = uuidv4()
 
 const driversPath = "./assets/drivers.json"
 const statsPath = "./assets/stats.json"
@@ -245,10 +242,6 @@ function server() {
         stats.visits++
     })
 
-    app.get("/version", (req, res) => {
-        res.send(version)
-    })
-
     app.get("/winner", (req, res) => {
         if (req.headers.authorization !== "Bearer kRyX3RYMRY$&yEc8") return res.end()
         res.json({
@@ -303,8 +296,7 @@ function server() {
             "permanentNumber": response[2],
             "age": response[3],
             "firstYear": response[4],
-            "wins": response[5],
-            "version": version
+            "wins": response[5]
         })
         stats.guesses++
     })

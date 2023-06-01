@@ -190,18 +190,7 @@ async function submit(guess, real, index = 0) {
         } else {
             answer = localStorage.answers
             json = JSON.parse(answer)[index]
-            json.version = localStorage.version
         }
-        if (localStorage.version && localStorage.version !== json.version) {
-            localStorage.removeItem("guesses")
-            localStorage.removeItem("version")
-            localStorage.removeItem("answers")
-            location.reload()
-        }
-        else {
-            localStorage.version = json.version
-        }
-        delete json.version
         if (real) {
             if (localStorage.answers) {
                 let answers = JSON.parse(localStorage.answers)
@@ -503,17 +492,6 @@ function fillStats(stats, scores) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetch(`${window.location.href}version`).then(res => {
-        res.text().then(result => {
-            if (result !== localStorage.version) {
-                localStorage.removeItem("guesses")
-                localStorage.removeItem("version")
-                localStorage.removeItem("answers")
-                localStorage.version = result
-                location.reload()
-            }
-        })
-    })
     if (localStorage.getItem("highContrast") === null) {
         document.getElementById("highContrast").disabled = true
     }
@@ -539,7 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let expire = new Date(JSON.parse(localStorage.guesses)[0])
                 if (expire <= d) {
                     localStorage.removeItem("guesses")
-                    localStorage.removeItem("version")
                     localStorage.removeItem("answers")
                 }
                 JSON.parse(localStorage.guesses).forEach(async (guess, index) => {
