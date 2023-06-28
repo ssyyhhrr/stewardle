@@ -104,7 +104,7 @@ schedule.scheduleJob("* * * * *", () => {
 })
 
 async function updateDrivers() {
-    drivers = {}
+    let newDrivers = {}
     for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         try {
@@ -132,6 +132,7 @@ async function updateDrivers() {
             if (i !== year) throw ""
         }
     }
+    drivers = newDrivers
 
     if (fs.existsSync("assets/drivers.json")) {
         console.log("Deleting drivers.json...")
