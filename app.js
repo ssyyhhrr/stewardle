@@ -110,11 +110,11 @@ async function updateDrivers() {
         try {
             await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
                 res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
-                    if (driver.Driver.driverId in drivers) {
-                        drivers[driver.Driver.driverId].wins += parseInt(driver.wins)
-                        if (drivers[driver.Driver.driverId].constructors[drivers[driver.Driver.driverId].constructors.length - 1] !== team[driver.Constructors[0].name] || drivers[driver.Driver.driverId].constructors.length === 0) drivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
+                    if (driver.Driver.driverId in newDrivers) {
+                        newDrivers[driver.Driver.driverId].wins += parseInt(driver.wins)
+                        if (newDrivers[driver.Driver.driverId].constructors[newDrivers[driver.Driver.driverId].constructors.length - 1] !== team[driver.Constructors[0].name] || newDrivers[driver.Driver.driverId].constructors.length === 0) newDrivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
                     } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
-                        drivers[driver.Driver.driverId] = {
+                        newDrivers[driver.Driver.driverId] = {
                             "firstName": driver.Driver.givenName,
                             "lastName": driver.Driver.familyName,
                             "code": driver.Driver.code,
