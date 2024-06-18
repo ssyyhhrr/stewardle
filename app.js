@@ -38,24 +38,67 @@ const flag = {
     "Chinese": "cn"
 }
 
-const team = {
-    "McLaren": "mclaren",
-    "Alpine F1 Team": "alpine",
-    "Mercedes": "mercedes",
-    "Sauber": "sauber",
-    "Haas F1 Team": "haas",
-    "Lotus F1": "lotus",
-    "Marussia": "marussia",
-    "Manor Marussia": "marussia",
-    "Renault": "renault",
-    "Alfa Romeo": "alfa",
-    "Williams": "williams",
-    "Aston Martin": "aston",
-    "Caterham": "caterham",
-    "Red Bull": "red",
-    "Toro Rosso": "toro",
-    "AlphaTauri": "alpha",
-    "Ferrari": "ferrari"
+function team(teamName, year) {
+    switch(teamName) {
+        case "McLaren":
+            return "mclaren"
+            break
+        case "Alpine F1 Team":
+            return "alpine"
+            break
+        case "Mercedes":
+            return "mercedes"
+            break
+        case "Sauber":
+            if (year < 2024) {
+                return "sauber"
+            } else {
+                return "kick"
+            }
+            break
+        case "Haas F1 Team":
+            return "haas"
+            break
+        case "Lotus F1":
+            return "lotus"
+            break
+        case "Marussia":
+            return "marussia"
+            break
+        case "Manor Marussia":
+            return "marussia"
+            break
+        case "Renault":
+            return "renault"
+            break
+        case "Alfa Romeo":
+            return "alfa"
+            break
+        case "Williams":
+            return "williams"
+            break
+        case "Aston Martin":
+            return "aston"
+            break
+        case "Caterham":
+            return "caterham"
+            break
+        case "Red Bull":
+            return "red"
+            break
+        case "Toro Rosso":
+            return "toro"
+            break
+        case "AlphaTauri":
+            return "alpha"
+            break
+        case "Ferrari":
+            return "ferrari"
+            break
+        case "RB F1 Team":
+            return "rb"
+            break
+    }
 }
 
 let stats = {
@@ -112,14 +155,14 @@ async function updateDrivers() {
                 res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
                     if (driver.Driver.driverId in newDrivers) {
                         newDrivers[driver.Driver.driverId].wins += parseInt(driver.wins)
-                        if (newDrivers[driver.Driver.driverId].constructors[newDrivers[driver.Driver.driverId].constructors.length - 1] !== team[driver.Constructors[0].name] || newDrivers[driver.Driver.driverId].constructors.length === 0) newDrivers[driver.Driver.driverId].constructors.push(team[driver.Constructors[0].name])
+                        if (newDrivers[driver.Driver.driverId].constructors[newDrivers[driver.Driver.driverId].constructors.length - 1] !== team(driver.Constructors[0].name, i) || newDrivers[driver.Driver.driverId].constructors.length === 0) newDrivers[driver.Driver.driverId].constructors.push(team(driver.Constructors[0].name, i))
                     } else if (driver.Driver.hasOwnProperty("permanentNumber")) {
                         newDrivers[driver.Driver.driverId] = {
                             "firstName": driver.Driver.givenName,
                             "lastName": driver.Driver.familyName,
                             "code": driver.Driver.code,
                             "nationality": flag[driver.Driver.nationality],
-                            "constructors": [team[driver.Constructors[0].name]],
+                            "constructors": [team(driver.Constructors[0].name, i)],
                             "permanentNumber": driver.Driver.permanentNumber,
                             "age": getAge(driver.Driver.dateOfBirth),
                             "firstYear": i,
