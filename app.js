@@ -448,7 +448,6 @@ function server() {
             if (req.query.driver === drivers[query].firstName + " " + drivers[query].lastName) {
                 search = true
                 let guess = drivers[query]
-                console.log(guess)
                 let actual = drivers[driver]
 
                 // nationality
