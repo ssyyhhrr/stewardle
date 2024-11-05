@@ -15,7 +15,7 @@
   <h3 align="center">Stewardle</h3>
 
   <p align="center">
-    A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Ergast API. Created with Express and Node.js.
+    A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Jolpica API. Created with Express and Node.js.
     <br />
     <a href="https://stewardle.com/">View Demo</a>
     ·
@@ -45,7 +45,7 @@
 	<img src="https://raw.githubusercontent.com/ssyyhhrr/stewardle/refs/heads/main/assets/screenshot.png" width="300"/>
 </p>
 
-A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Ergast API. Created with Express and Node.js.
+A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Jolpica API. Created with Express and Node.js.
 
 <!-- CONTRIBUTING -->
 ## Contributing

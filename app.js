@@ -272,7 +272,7 @@ axios.get("https://api.jolpi.ca/ergast/f1/1950/driverStandings.json?limit=1000")
         let data = fs.readFileSync(driversPath)
         drivers = JSON.parse(data)
     } else {
-        throw "Ergast API is unreachable and the drivers.json cache has not been built. Please try again when the Ergast API is online."
+        throw "Jolpica API is unreachable and the drivers.json cache has not been built. Please try again when the Jolpica API is online."
     }
 }).catch(err => {
     console.log(err)
