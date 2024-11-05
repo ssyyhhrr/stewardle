@@ -2,3 +2,4 @@ node_modules
 drivers.json
 stats.json
 .idea
+.DS_Store
