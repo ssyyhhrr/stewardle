@@ -258,7 +258,13 @@ let driver
 
 let year = new Date().getFullYear()
 
-axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
+axios.get("https://api.jolpi.ca/ergast/f1/1950/driverStandings.json?limit=1000").then(async () => {
     await updateDrivers()
 }).catch(() => {
     console.log("API is unreachable! Not updating drivers...")
@@ -277,7 +283,7 @@ axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then
 })
 
 schedule.scheduleJob("59 23 * * *", async () => {
-    axios.get("https://ergast.com/api/f1/1950/driverStandings.json?limit=1000").then(async () => {
+    axios.get("https://api.jolpi.ca/ergast/f1/1950/driverStandings.json?limit=1000").then(async () => {
         await updateDrivers()
     }).catch(() => {
         console.log("API is unreachable! Not updating drivers...")
@@ -298,7 +304,7 @@ async function updateDrivers() {
     for (let i = 2000; i <= year; i++) {
         console.log(`Scraping F1 ${i} Season...`)
         try {
-            await axios.get(`http://ergast.com/api/f1/${i}/driverStandings.json?limit=1000`).then(res => {
+            await axios.get(`https://api.jolpi.ca/ergast/f1/${i}/driverStandings.json?limit=1000`).then(res => {
                 res.data.MRData.StandingsTable.StandingsLists[0].DriverStandings.forEach(driver => {
                     if (driver.Driver.driverId in newDrivers) {
                         newDrivers[driver.Driver.driverId].wins += parseInt(driver.wins)
@@ -321,6 +327,7 @@ async function updateDrivers() {
         } catch (e) {
             if (i !== year) throw ""
         }
+        await sleep(300)
     }
     drivers = newDrivers
 
