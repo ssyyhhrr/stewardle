@@ -42,7 +42,7 @@
 ## About The Project
 
 <p float="left">
-	<img src="https://sy.hr/files/2022-11-06_16-11-14_SwmULV0ww8CqeuWK.png" width="300"/>
+	<img src="https://raw.githubusercontent.com/ssyyhhrr/stewardle/refs/heads/main/assets/screenshot.png" width="300"/>
 </p>
 
 A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Ergast API. Created with Express and Node.js.
