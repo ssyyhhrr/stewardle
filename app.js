@@ -36,7 +36,7 @@ const flag = {
     "Italian": "it",
     "Monegasque": "mc",
     "Chinese": "cn",
-    "Argentinian": "ar",
+    "Argentine": "ar",
     "Andorran": "ad",
     "Emirati": "ae",
     "Afghan": "af",
