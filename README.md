@@ -5,7 +5,7 @@
 [![Issues][issues-shield]][issues-url]
 [![Docker Pulls][docker-shield]][docker-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+
 <!-- PROJECT LOGO -->
 <div align="center">
   <a href="https://github.com/ssyyhhrr/stewardle/">
@@ -115,7 +115,5 @@ Project Link: [https://github.com/ssyyhhrr/stewardle](https://github.com/ssyyhhr
 [issues-url]: https://github.com/ssyyhhrr/stewardle/issues
 [license-shield]: https://img.shields.io/github/license/ssyyhhrr/stewardle.svg?style=for-the-badge
 [license-url]: https://github.com/ssyyhhrr/stewardle/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/rhys-bishop-158638214/
 [docker-shield]: https://img.shields.io/docker/pulls/syhr/stewardle.svg?style=for-the-badge
 [docker-url]: https://hub.docker.com/r/syhr/stewardle
