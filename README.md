@@ -9,7 +9,7 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://github.com/ssyyhhrr/stewardle/">
     <img src="https://raw.githubusercontent.com/ssyyhhrr/stewardle/refs/heads/main/assets/stewardle.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Stewardle</h3>
@@ -32,6 +32,7 @@
     <li>
       <a href="#about-the-project">About The Project</a>
     </li>
+    <li><a href="#docker">Docker</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -46,6 +47,24 @@
 </p>
 
 A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Jolpica API. Created with Express and Node.js.
+
+<!-- DOCKER -->
+## Docker
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/syhr/stewardle).
+```sh
+docker pull syhr/stewardle
+docker run -d -p 3000:3000 syhr/stewardle
+```
+Or with Docker Compose:
+```yaml
+services:
+  stewardle:
+    image: syhr/stewardle
+    container_name: stewardle
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+```
 
 <!-- CONTRIBUTING -->
 ## Contributing
