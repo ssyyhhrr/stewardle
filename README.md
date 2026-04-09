@@ -1,56 +1,84 @@
 <a name="readme-top"></a>
-
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
+[![Docker Pulls][docker-shield]][docker-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://github.com/ssyyhhrr/stewardle/">
     <img src="https://raw.githubusercontent.com/ssyyhhrr/stewardle/refs/heads/main/assets/stewardle.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Stewardle</h3>
-
   <p align="center">
     A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Jolpica API. Created with Express and Node.js.
     <br />
-    <a href="https://stewardle.com/">View Demo</a>
+    🌐 <a href="https://stewardle.com/">View Demo</a>
     ·
-    <a href="https://github.com/ssyyhhrr/stewardle/issues">Report Bug</a>
+    🐛 <a href="https://github.com/ssyyhhrr/stewardle/issues">Report Bug</a>
     ·
-    <a href="https://github.com/ssyyhhrr/stewardle/issues">Request Feature</a>
+    ✨ <a href="https://github.com/ssyyhhrr/stewardle/issues">Request Feature</a>
   </p>
 </div>
+
+---
 
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#docker">Docker</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
 
+---
+
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## 🏎️ About The Project
 
 <p float="left">
 	<img src="https://raw.githubusercontent.com/ssyyhhrr/stewardle/refs/heads/main/assets/screenshot.png" width="300"/>
 </p>
 
-A Wordle-inspired game designed for the web. Players must guess the randomly selected F1 driver using statistics retrieved from the Jolpica API. Created with Express and Node.js.
+Stewardle is a daily guessing game for Formula 1 fans. Each day, a random F1 driver is selected and players must identify them using statistical clues — nationality, team, race wins, championships, and more — all powered by live data from the Jolpica API.
+
+---
+
+<!-- DOCKER -->
+## 🐳 Docker
+
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/syhr/stewardle).
+
+```sh
+docker pull syhr/stewardle
+docker run -d -p 3000:3000 syhr/stewardle
+```
+
+Or with Docker Compose:
+
+```yaml
+services:
+  stewardle:
+    image: syhr/stewardle
+    container_name: stewardle
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+```
+
+---
 
 <!-- CONTRIBUTING -->
-## Contributing
+## 🤝 Contributing
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+
 Don't forget to give the project a star! Thanks again!
 
 1. Fork the Project
@@ -59,13 +87,17 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+---
+
 <!-- LICENSE -->
-## License
+## 📄 License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
+---
+
 <!-- CONTACT -->
-## Contact
+## 📬 Contact
 
 Rhys Bishop - [https://sy.hr/](https://sy.hr/) - mail@rhysbi.shop
 
@@ -83,5 +115,5 @@ Project Link: [https://github.com/ssyyhhrr/stewardle](https://github.com/ssyyhhr
 [issues-url]: https://github.com/ssyyhhrr/stewardle/issues
 [license-shield]: https://img.shields.io/github/license/ssyyhhrr/stewardle.svg?style=for-the-badge
 [license-url]: https://github.com/ssyyhhrr/stewardle/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/rhys-bishop-158638214/
+[docker-shield]: https://img.shields.io/docker/pulls/syhr/stewardle.svg?style=for-the-badge
+[docker-url]: https://hub.docker.com/r/syhr/stewardle
