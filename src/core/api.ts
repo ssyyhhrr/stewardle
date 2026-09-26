@@ -72,5 +72,5 @@ export interface GuessResponse {
 
 /** Any API error. */
 export interface ErrorResponse {
-  readonly error: GuessRejection | "bad-request" | "bad-token" | "not-ready";
+  readonly error: GuessRejection | "bad-request" | "bad-token" | "not-ready" | "not-found" | "internal";
 }
