@@ -111,6 +111,7 @@ describe("GET /api/puzzle", () => {
     expect(puzzle.day).toBe(TODAY);
     expect(puzzle.gameNumber).toBe(1558);
     expect(puzzle.nextPuzzleAt).toBe(startOfDay(addDays(TODAY, 1)));
+    expect(puzzle.serverTime).toBe(h.clock.now);
     expect(puzzle.drivers).toHaveLength(roster.length);
     expect(puzzle.drivers.find((d) => d.id === "leclerc")?.team).toMatchObject({
       id: "ferrari",
@@ -118,7 +119,7 @@ describe("GET /api/puzzle", () => {
     });
   });
 
-  it("is identical whoever the answer is", async () => {
+  it("is identical whoever the answer is (apart from the clock)", async () => {
     const other = await harness({ answer: idOf("Lando Norris") });
     const a = await (await h.request("GET", "/api/puzzle")).text();
     const b = await (await other.request("GET", "/api/puzzle")).text();

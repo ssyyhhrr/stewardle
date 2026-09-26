@@ -172,6 +172,7 @@ export class GameService {
       day: today,
       gameNumber: gameNumber(today),
       nextPuzzleAt: nextDayStart(this.deps.now()),
+      serverTime: this.deps.now(),
       drivers: this.cards(today, drivers),
     };
   }
