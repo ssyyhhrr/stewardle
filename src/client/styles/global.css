@@ -1,0 +1,202 @@
+/*
+ * Page-wide styles: colours, type, the verdict tile palette (normal and high
+ * contrast) and the tile sizing that keeps seven columns on a 320px phone.
+ */
+:root {
+  color-scheme: dark;
+  --bg: #171717;
+  --border: #3a3a3c;
+  --text: #fff;
+  --muted: #d3d3d3;
+  --accent: #fd1706;
+
+  --correct: #508b53;
+  --incorrect: #eb4b48;
+  --previous: #e78f3a;
+  --up: #e78f3a;
+  --down: #b042ff;
+
+  /*
+   * Seven tiles plus their 8px margins must fit the viewport minus a 16px
+   * gutter each side: 7 × (tile + 8) ≤ 100vw − 32px. Capped at the original 55px.
+   */
+  --tile: clamp(30px, calc((100vw - 32px) / 7 - 8px), 55px);
+  --font: "Titillium Web", "Segoe UI", system-ui, sans-serif;
+}
+
+/* The original high-contrast palette, for players who struggle with the defaults. */
+:root.high-contrast {
+  --correct: #88ea09;
+  --incorrect: #e21143;
+  --previous: #f9bd00;
+  --up: #f9bd00;
+  --down: #8a2df0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--text);
+}
+
+p a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--muted);
+  outline-offset: 2px;
+}
+
+/* A clue tile. The verdict classes double as the game's vocabulary (see core/clues.ts). */
+.frame {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: var(--tile);
+  height: var(--tile);
+  margin: 4px;
+  background-color: var(--bg);
+  outline: 2px solid var(--border);
+  text-align: center;
+  font-weight: 700;
+  font-size: calc(var(--tile) * 0.3);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 1s,
+    border-radius 1s;
+}
+
+.frame.correct {
+  background-color: var(--correct);
+  border-radius: 18%;
+}
+
+.frame.incorrect {
+  background-color: var(--incorrect);
+  border-radius: 18%;
+}
+
+.frame.previous {
+  background-color: var(--previous);
+  border-radius: 18%;
+}
+
+/* "up": the answer's value is higher, so the tile points up. */
+.frame.up {
+  background-color: var(--up);
+  border-radius: 36% 36% 0 0;
+}
+
+.frame.down {
+  background-color: var(--down);
+  border-radius: 0 0 36% 36%;
+}
+
+/*
+ * Pinned to the tile's edges: a percentage height doesn't resolve against the
+ * tile's auto-sized grid row, which let tall logos (Ferrari) spill out.
+ */
+.frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  object-fit: contain;
+}
+
+.splitter {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border);
+  border: 0;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-10px);
+  }
+  40%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* The outlined buttons (Share, Retry). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 10px 14px;
+  background-color: var(--bg);
+  border: 2px solid var(--border);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.btn:hover {
+  border-color: var(--muted);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}

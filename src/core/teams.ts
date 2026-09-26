@@ -70,6 +70,11 @@ const RULES: Readonly<Record<string, readonly BrandRule[]>> = {
   williams: [{ brand: brand("williams", "Williams", "WIL") }],
 };
 
+/** Ids of every brand in the table; logos are optional, but must use one of these names. */
+export function knownBrandIds(): string[] {
+  return [...new Set(Object.values(RULES).flatMap((rules) => rules.map((rule) => rule.brand.id)))].sort();
+}
+
 /** A short badge for a team the table doesn't know: initials, or the first word. */
 export function fallbackBadge(name: string): string {
   const words = name
