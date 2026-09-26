@@ -1,0 +1,12 @@
+{
+  "capturedDay": "2026-09-26",
+  "source": "original app at af4018c",
+  "localStorage": {
+    "stats": "[1,0,1,0,0]",
+    "guesses": "[\"2026-09-27T00:00:00.000Z\",\"Lewis Hamilton\",\"Marcus Ericsson\",\"Valtteri Bottas\",\"Max Verstappen\",\"Lando Norris\",\"Fernando Alonso\"]",
+    "first": "false",
+    "answers": "[{\"nationality\":3,\"constructor\":1,\"permanentNumber\":0,\"age\":0,\"firstYear\":2,\"wins\":0},{\"nationality\":3,\"constructor\":4,\"permanentNumber\":2,\"age\":0,\"firstYear\":2,\"wins\":2},{\"nationality\":3,\"constructor\":3,\"permanentNumber\":0,\"age\":0,\"firstYear\":2,\"wins\":0},{\"nationality\":3,\"constructor\":3,\"permanentNumber\":2,\"age\":1,\"firstYear\":2,\"wins\":0},{\"nationality\":3,\"constructor\":3,\"permanentNumber\":2,\"age\":2,\"firstYear\":0,\"wins\":0},{\"nationality\":3,\"constructor\":3,\"permanentNumber\":2,\"age\":0,\"firstYear\":2,\"wins\":0}]",
+    "scores": "[0,0,0,0,0,1]",
+    "highContrast": "true"
+  }
+}
