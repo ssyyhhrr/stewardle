@@ -53,6 +53,8 @@ export interface PuzzleResponse {
   readonly gameNumber: number;
   /** Epoch ms when the next puzzle starts. */
   readonly nextPuzzleAt: number;
+  /** The server's clock when it answered, so the countdown can ignore a wrong device clock. */
+  readonly serverTime: number;
   readonly drivers: readonly DriverCard[];
 }
 
