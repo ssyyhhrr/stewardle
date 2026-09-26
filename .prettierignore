@@ -5,10 +5,5 @@ playwright-report
 package-lock.json
 # Recorded API responses are stored byte-for-byte as Jolpica sent them.
 tests/fixtures
-# Third-party artwork.
-assets/flags
+# Third-party artwork (flag-icons).
 src/client/public/flags
-# The legacy app, kept only until the rewrite replaces it.
-app.js
-assets
-views

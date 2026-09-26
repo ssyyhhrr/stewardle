@@ -10,7 +10,3 @@ data
 # Playwright run output
 test-results
 playwright-report
-
-# Written into assets/ by the legacy server; goes away with it.
-drivers.json
-stats.json

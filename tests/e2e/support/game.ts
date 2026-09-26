@@ -1,11 +1,9 @@
 /**
  * Page object for the game. Every selector the e2e specs rely on lives here,
  * so a markup change is a one-file edit and the specs read as game rules.
- *
- * While the legacy page exists some helpers accept either markup: its icon
- * "buttons" are Font Awesome <i> elements that react to mousedown and have no
- * size when the icon kit fails to load, so they are driven with dispatched
- * events instead of clicks.
+ * Selectors prefer roles and labels, as players (and screen readers) see the
+ * page; the tile verdict classes are the exception, being the game's own
+ * vocabulary (see src/core/clues.ts).
  */
 import { expect, type Locator, type Page } from "@playwright/test";
 import type { TileState } from "./oracle";
@@ -66,14 +64,12 @@ export class Game {
   }
 
   get suggestions(): Locator {
-    return this.page.locator(".autocomplete-items > div, [role='option']");
+    return this.page.getByRole("option");
   }
 
-  /** Clicks a legacy mousedown icon if present, otherwise the labelled button. */
-  private async press(legacySelector: string, label: string): Promise<void> {
-    const legacy = this.page.locator(legacySelector);
-    if ((await legacy.count()) > 0) await legacy.dispatchEvent("mousedown");
-    else await this.page.getByRole("button", { name: label }).click();
+  /** Clicks a header button by its accessible name. */
+  private async press(label: string): Promise<void> {
+    await this.page.getByRole("button", { name: label }).click();
   }
 
   /** Types into the guess box and returns the suggestion texts shown. */
@@ -141,23 +137,10 @@ export class Game {
 
   /** Shares the result from the end-of-game panel and returns the text produced. */
   async share(): Promise<string> {
-    await this.page
-      .locator("#share-btn")
-      .or(this.page.getByRole("button", { name: /^share$/i }))
-      .first()
-      .click();
-    const copy = this.page.locator(".copy .btn").or(this.page.getByRole("button", { name: /^copy$/i }));
+    await this.page.locator(".result").getByRole("button", { name: "Share" }).click();
     const shared = async (): Promise<string[]> =>
       this.page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
-    await expect
-      .poll(
-        async () => {
-          if ((await shared()).length === 0 && (await copy.count()) > 0) await copy.first().click();
-          return (await shared()).length;
-        },
-        { timeout: 10_000 },
-      )
-      .toBeGreaterThan(0);
+    await expect.poll(async () => (await shared()).length).toBeGreaterThan(0);
     const texts = await shared();
     return texts[texts.length - 1] ?? "";
   }
@@ -188,30 +171,29 @@ export class Game {
   /** Dismisses whichever modal is open by clicking the dimmed backdrop. */
   async closeModal(): Promise<void> {
     const viewport = this.page.viewportSize() ?? { width: 1280, height: 720 };
-    // The legacy modals ignore clicks for 500 ms after opening; retry until closed.
+    await this.page.mouse.click(viewport.width / 2, 4);
     await expect
-      .poll(async () => {
-        await this.page.mouse.click(viewport.width / 2, 4);
-        await this.page.waitForTimeout(600);
-        return (await this.effectiveOpacity(this.tutorial)) + (await this.effectiveOpacity(this.statsDialog));
-      })
+      .poll(
+        async () =>
+          (await this.effectiveOpacity(this.tutorial)) + (await this.effectiveOpacity(this.statsDialog)),
+      )
       .toBe(0);
   }
 
   async openTutorial(): Promise<void> {
-    await this.press("#tutorial", "How to play");
+    await this.press("How to play");
   }
 
   async toggleHighContrast(): Promise<void> {
-    await this.press("#highContrast-btn", "High contrast");
+    await this.press("High contrast");
   }
 
   get statsDialog(): Locator {
-    return this.page.locator("#shareScreen, dialog[aria-label='Statistics']");
+    return this.page.getByRole("dialog", { name: "Statistics" });
   }
 
   async openStats(): Promise<void> {
-    await this.press("#stats", "Statistics");
+    await this.press("Statistics");
     await expect.poll(() => this.effectiveOpacity(this.statsDialog)).toBe(1);
   }
 
