@@ -6,7 +6,7 @@
 import { expect, test } from "@playwright/test";
 import { openGame } from "./support/game";
 import { emojiRow, expectedStates, gameNumber, type TileState } from "./support/oracle";
-import { ANSWER_NAME, WRONG_GUESSES } from "./support/scenario";
+import { ANSWER_NAME, APP_URL, WRONG_GUESSES } from "./support/scenario";
 
 const VICTORY_CALLS = [
   "How About That?!",
@@ -46,7 +46,7 @@ test("a win reveals the driver, starts the countdown and shares the grid", async
     emojiRow(expectedStates(WRONG_GUESSES[0], ANSWER_NAME)),
     emojiRow(Array<TileState>(6).fill("correct")),
   ];
-  expect(shared).toBe(`Stewardle ${gameNumber()} 2/6\n\n${rows.join("\n")}\n`);
+  expect(shared).toBe(`Stewardle ${gameNumber()} 2/6\n\n${rows.join("\n")}\n\n${APP_URL}`);
 });
 
 test("a win is recorded in the statistics", async ({ page }) => {
@@ -67,12 +67,13 @@ test("six misses end the game with Bwoah., the reveal and a lost result", async 
   expect(await game.revealedDriver()).toBe(ANSWER_NAME);
   await expect(game.input).toHaveCount(0);
 
+  // A loss is scored X/6, as in Wordle (the original site said 6/6).
   const shared = await game.share();
   const grid = WRONG_GUESSES.map((name) => emojiRow(expectedStates(name, ANSWER_NAME))).join("\n");
-  expect(shared.startsWith(`Stewardle ${gameNumber()} `)).toBe(true);
-  expect(shared).toContain(grid);
+  expect(shared).toBe(`Stewardle ${gameNumber()} X/6\n\n${grid}\n\n${APP_URL}`);
 
-  await game.closeModal();
   await game.openStats();
   await expect.poll(() => game.readStats()).toEqual({ played: 1, won: 0, lost: 1, streak: 0, max: 0 });
+  // A loss is not a win in six guesses (the original site counted it as one).
+  expect(await game.readDistribution()).toEqual([0, 0, 0, 0, 0, 0]);
 });

@@ -183,6 +183,11 @@ const FLAGS: Readonly<Record<string, string>> = {
 /** Flag code shown when a nationality isn't in the table: flag-icons' "unknown" flag. */
 export const UNKNOWN_FLAG = "xx";
 
+/** Every flag code the table can produce (plus UNKNOWN_FLAG); each needs an image. */
+export function knownFlagCodes(): string[] {
+  return [...new Set([...Object.values(FLAGS), UNKNOWN_FLAG])].sort();
+}
+
 /** The flag code for a Jolpica nationality, or UNKNOWN_FLAG if the table lacks it. */
 export function flagFor(nationality: string): string {
   return FLAGS[nationality.trim()] ?? UNKNOWN_FLAG;

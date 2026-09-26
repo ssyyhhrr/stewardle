@@ -12,7 +12,11 @@ import type { TileState } from "./oracle";
 
 const STATES: readonly TileState[] = ["correct", "incorrect", "previous", "up", "down"];
 
-/** Captures share-sheet and clipboard output so tests can read it in any engine. */
+/**
+ * Captures share-sheet and clipboard output so tests can read it in any
+ * engine (headless browsers have no real share sheet, and reading the
+ * clipboard back needs permissions WebKit doesn't grant).
+ */
 export async function captureSharing(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const shared: string[] = [];
@@ -24,6 +28,13 @@ export async function captureSharing(page: Page): Promise<void> {
           shared.push(text);
           return Promise.resolve();
         },
+      },
+    });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: (data: { text?: string }) => {
+        shared.push(data.text ?? "");
+        return Promise.resolve();
       },
     });
   });
@@ -196,7 +207,7 @@ export class Game {
   }
 
   get statsDialog(): Locator {
-    return this.page.locator("#shareScreen, [role='dialog'][aria-label='Statistics']");
+    return this.page.locator("#shareScreen, dialog[aria-label='Statistics']");
   }
 
   async openStats(): Promise<void> {

@@ -4,9 +4,11 @@
  *
  * This is the only test code that knows how a particular implementation
  * stores its data. The specs talk to the app purely through the browser, so
- * the same specs run against the legacy Express server and its replacement.
+ * the same specs ran against the legacy Express server before the rewrite
+ * and run against its replacement now.
  */
 import { spawn, type ChildProcess } from "node:child_process";
+import { existsSync } from "node:fs";
 import { cp, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -52,9 +54,42 @@ async function startLegacy(fakePort: number): Promise<LaunchPlan> {
   };
 }
 
+/**
+ * The current app, from the production build (run `npm run build` first; `npm
+ * test` does). Today's answer is seeded through its history.json, and it
+ * fetches its roster from the fake Jolpica like a real first boot.
+ */
+async function startApp(fakeBaseUrl: string): Promise<LaunchPlan> {
+  const entry = path.join(ROOT, "dist/server/main.js");
+  if (!existsSync(entry))
+    throw new Error("dist/server/main.js is missing: run `npm run build` before the e2e tests");
+  const dir = await mkdtemp(path.join(os.tmpdir(), "stewardle-e2e-"));
+  await writeFile(
+    path.join(dir, "history.json"),
+    JSON.stringify({ version: 1, answers: { [todayKey()]: ANSWER_ID } }),
+  );
+  return {
+    dir,
+    command: "node",
+    args: [entry],
+    env: {
+      ...process.env,
+      PORT: String(APP_PORT),
+      HOST: "127.0.0.1",
+      DATA_DIR: dir,
+      STATIC_DIR: path.join(ROOT, "dist/client"),
+      JOLPICA_BASE_URL: fakeBaseUrl,
+    },
+  };
+}
+
 async function main(): Promise<void> {
   const fake = await startFakeJolpica();
-  const app = await startLegacy(fake.port);
+  // STEWARDLE_E2E_TARGET=legacy runs the specs against the original Express app instead.
+  const app =
+    process.env["STEWARDLE_E2E_TARGET"] === "legacy"
+      ? await startLegacy(fake.port)
+      : await startApp(fake.baseUrl);
   process.stdout.write(`fake Jolpica on ${fake.baseUrl}; app on port ${APP_PORT}\n`);
 
   const child: ChildProcess = spawn(app.command, app.args, { cwd: app.dir, env: app.env, stdio: "inherit" });
