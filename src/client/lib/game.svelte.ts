@@ -24,6 +24,9 @@ export interface BoardRow extends SavedGuess {
 export type Phase = "loading" | "ready" | "unavailable";
 
 const NOTICE_MS = 4000;
+/** First and longest pause between attempts to load the next day's puzzle. */
+const RETRY_FIRST_MS = 2000;
+const RETRY_MAX_MS = 60_000;
 
 /** One instance per page; see App.svelte. */
 export class GameController {
@@ -44,6 +47,7 @@ export class GameController {
   private clockOffset = 0;
   private noticeTimer: ReturnType<typeof setTimeout> | undefined;
   private checkingDay = false;
+  private retryDelay = RETRY_FIRST_MS;
 
   readonly driversById = $derived(indexById(this.puzzle?.drivers ?? []));
 
@@ -83,33 +87,44 @@ export class GameController {
     });
   }
 
-  private async loadPuzzle(): Promise<void> {
+  /** Fetches today's puzzle; false if the server couldn't be reached. */
+  private async loadPuzzle(): Promise<boolean> {
     const result = await fetchPuzzle();
     if (!result.ok) {
       if (!this.puzzle) this.phase = "unavailable";
-      return;
+      return false;
     }
     this.clockOffset = result.data.serverTime - Date.now();
     this.puzzle = result.data;
     this.phase = "ready";
     if (this.save.game && this.save.game.day !== result.data.day) this.update({ game: null });
     this.headline = this.headlineFor(this.status);
+    return true;
   }
 
   /**
    * Called when the countdown reaches zero or the tab comes back into view:
    * moves to the new puzzle once the server has one. An unfinished game from
    * the old day is simply dropped.
+   *
+   * If the server still says it's the old day (our clock ran slightly
+   * ahead) or can't be reached, it tries again with a doubling delay capped
+   * at a minute, and not at all while the tab is hidden (becoming visible
+   * triggers a fresh check), so an offline phone isn't polling forever.
    */
   async checkForNewDay(): Promise<void> {
     if (!this.puzzle || this.checkingDay || this.now() < this.puzzle.nextPuzzleAt) return;
     this.checkingDay = true;
     try {
       const previous = this.puzzle.day;
-      await this.loadPuzzle();
-      if (this.puzzle.day === previous) {
-        // Our clock ran slightly ahead of the server's; try again shortly.
-        setTimeout(() => void this.checkForNewDay(), 2000);
+      const reached = await this.loadPuzzle();
+      if (reached && this.puzzle.day !== previous) {
+        this.retryDelay = RETRY_FIRST_MS;
+        return;
+      }
+      if (document.visibilityState === "visible") {
+        setTimeout(() => void this.checkForNewDay(), this.retryDelay);
+        this.retryDelay = Math.min(this.retryDelay * 2, RETRY_MAX_MS);
       }
     } finally {
       this.checkingDay = false;
@@ -147,7 +162,14 @@ export class GameController {
     }
     this.busy = true;
     try {
-      const result = await submitGuess({ token: this.game?.token ?? null, driverId });
+      let result = await submitGuess({ token: this.game?.token ?? null, driverId });
+      if (!result.ok && result.kind === "rejected" && result.error === "bad-token") {
+        // The server no longer accepts this game (its signing secret changed),
+        // so the saved board can't be continued: start the day afresh and replay the guess.
+        this.update({ game: null });
+        this.say("Your game couldn't be verified, so today's board has been restarted.");
+        result = await submitGuess({ token: null, driverId });
+      }
       if (!result.ok) {
         if (result.kind === "offline")
           this.say("Couldn't reach the server. Check your connection and try again.");

@@ -10,13 +10,14 @@
   interface Props {
     drivers: readonly DriverCard[];
     exclude: ReadonlySet<string>;
-    disabled: boolean;
+    /** A guess is being scored: typing is paused but the box keeps focus (and the phone keyboard). */
+    busy: boolean;
     shakes: number;
     onguess: (driverId: string) => void;
     onreject: () => void;
   }
 
-  const { drivers, exclude, disabled, shakes, onguess, onreject }: Props = $props();
+  const { drivers, exclude, busy, shakes, onguess, onreject }: Props = $props();
 
   let query = $state("");
   let active = $state(-1);
@@ -79,7 +80,8 @@
     autocapitalize="words"
     spellcheck="false"
     enterkeyhint="go"
-    {disabled}
+    readonly={busy}
+    aria-busy={busy}
   />
   {#if suggestions.length > 0}
     <ul id={listId} role="listbox" aria-label="Matching drivers">
