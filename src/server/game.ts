@@ -94,9 +94,13 @@ export class GameService {
     };
   }
 
-  /** Stores a freshly fetched roster (immediately on first boot, otherwise from tomorrow). */
-  async addRoster(snapshot: RosterSnapshot): Promise<void> {
-    this.rosterState = addFetchedRoster(this.rosterState, snapshot, this.today());
+  /**
+   * Stores a freshly fetched roster: immediately on first boot, otherwise
+   * from the day after the fetch *started* (`startedAt`, epoch ms), so a
+   * 23:30 refresh that finishes after midnight isn't pushed back a day.
+   */
+  async addRoster(snapshot: RosterSnapshot, startedAt: number = this.deps.now()): Promise<void> {
+    this.rosterState = addFetchedRoster(this.rosterState, snapshot, dayKeyOf(startedAt), this.today());
     await writeJsonAtomic(GameService.rosterFile(this.deps.dataDir), this.rosterState);
   }
 
@@ -127,28 +131,51 @@ export class GameService {
     const id = pickAnswer(drivers, history, today, this.deps.random);
     this.history = { ...this.history, [today]: id };
     this.deps.log.info("picked driver of the day", { day: today });
-    this.persist(GameService.historyFile(this.deps.dataDir), {
+    const write = writeJsonAtomic(GameService.historyFile(this.deps.dataDir), {
       version: HISTORY_VERSION,
       answers: this.history,
+    }).catch((error: unknown) => {
+      // Forget the unsaved pick, so the next request picks and saves again
+      // instead of serving an answer a restart would lose.
+      if (this.history[today] === id) {
+        this.history = Object.fromEntries(Object.entries(this.history).filter(([day]) => day !== today));
+      }
+      this.deps.log.error("failed to save today's answer", { error: String(error) });
+      throw error;
     });
+    this.track(write);
     const picked = drivers.find((d) => d.id === id);
     if (!picked) throw new Error("picked answer is not in the roster");
     return picked;
   }
 
   /**
-   * Starts saving state. The in-memory change has already happened (so
-   * concurrent requests agree); flush() lets a request wait until it's on
-   * disk, so a crash can't forget a pick that a player has already seen.
+   * Saves non-critical state (a promoted roster). If this fails the roster
+   * in memory is still right, and a restart refetches, so it is only logged.
    */
   private persist(file: string, value: unknown): void {
-    const write = writeJsonAtomic(file, value).catch((error: unknown) => {
-      this.deps.log.error("failed to save state", { file, error: String(error) });
-    });
-    this.writes.add(write);
-    void write.finally(() => this.writes.delete(write));
+    this.track(
+      writeJsonAtomic(file, value).catch((error: unknown) => {
+        this.deps.log.error("failed to save state", { file, error: String(error) });
+      }),
+    );
   }
 
+  /** Remembers a write until it settles, so flush() can wait for it. */
+  private track(write: Promise<void>): void {
+    this.writes.add(write);
+    // Settle-handler only: keeps an unawaited failure from being an unhandled rejection.
+    void write.then(
+      () => this.writes.delete(write),
+      () => this.writes.delete(write),
+    );
+  }
+
+  /**
+   * Waits for pending saves. The in-memory change happens first (so
+   * concurrent requests agree); waiting here means no player sees an answer
+   * that isn't on disk. Rejects if saving today's answer failed.
+   */
   private async flush(): Promise<void> {
     await Promise.all(this.writes);
   }

@@ -5,7 +5,7 @@
  */
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { nextDayStart } from "../core/calendar";
+import { addDays, dayKeyOf, nextDayStart, startOfDay } from "../core/calendar";
 import type { RosterSnapshot } from "../core/roster-state";
 import type { GameService } from "./game";
 import type { Logger } from "./log";
@@ -51,7 +51,7 @@ export async function ensureRoster(
     const ageMs = timing.now() - Date.parse(activeFetchedAt);
     if (pendingFrom === null && ageMs > 24 * 3600_000) {
       timing.log.info("saved roster is over a day old; refreshing in the background");
-      void refreshOnce(game, fetchRoster, timing.log);
+      void refreshOnce(game, fetchRoster, timing);
     }
     return;
   }
@@ -73,17 +73,21 @@ export async function ensureRoster(
   }
 }
 
-/** One refresh; failures are logged and the current roster stays in use. */
+/**
+ * One refresh; failures are logged and the current roster stays in use. The
+ * roster is dated by when the fetch started, not when it finished.
+ */
 export async function refreshOnce(
   game: GameService,
   fetchRoster: () => Promise<RosterSnapshot>,
-  log: Logger,
+  timing: Pick<Timing, "now" | "log">,
 ): Promise<boolean> {
+  const startedAt = timing.now();
   try {
-    await game.addRoster(await fetchRoster());
+    await game.addRoster(await fetchRoster(), startedAt);
     return true;
   } catch (error) {
-    log.error("roster refresh failed; keeping the current roster", { error: String(error) });
+    timing.log.error("roster refresh failed; keeping the current roster", { error: String(error) });
     return false;
   }
 }
@@ -93,8 +97,10 @@ export const REFRESH_MINUTES_BEFORE_MIDNIGHT = 30;
 
 /** Milliseconds from `now` until the next 23:30 UTC. */
 export function msUntilNextRefresh(now: number): number {
-  const target = nextDayStart(now) - REFRESH_MINUTES_BEFORE_MIDNIGHT * 60_000;
-  return target > now ? target - now : target + 86_400_000 - now;
+  const before = REFRESH_MINUTES_BEFORE_MIDNIGHT * 60_000;
+  const tonight = nextDayStart(now) - before;
+  if (tonight > now) return tonight - now;
+  return startOfDay(addDays(dayKeyOf(now), 2)) - before - now;
 }
 
 /**
@@ -115,7 +121,7 @@ export function scheduleNightlyRefresh(
   const arm = (ms: number, retriesLeft: number): void => {
     if (stopped) return;
     const handle = setTimer(() => {
-      void refreshOnce(game, fetchRoster, timing.log).then((ok) => {
+      void refreshOnce(game, fetchRoster, timing).then((ok) => {
         if (!ok && retriesLeft > 0) arm(10 * 60_000, retriesLeft - 1);
         else arm(msUntilNextRefresh(timing.now()), 2);
       });

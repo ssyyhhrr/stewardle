@@ -4,7 +4,7 @@
  * Above all it protects the anti-cheat promise: nothing reveals today's
  * answer before the player's game is over.
  */
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -203,6 +203,17 @@ describe("the daily answer", () => {
     expect(answer).toBeDefined();
     const [won] = await play(restarted, [fullName(answer ?? ANSWER)]);
     expect(won?.status).toBe("won");
+  });
+
+  it("fails the request, and tries again next time, if today's answer can't be saved", async () => {
+    const fresh = await harness();
+    const historyPath = path.join(fresh.dataDir, "history.json");
+    await mkdir(historyPath); // a directory where the file should go makes the rename fail
+    expect((await fresh.request("GET", "/api/puzzle")).status).toBe(500);
+    await rm(historyPath, { recursive: true });
+    expect((await fresh.request("GET", "/api/puzzle")).status).toBe(200);
+    const saved = (await readJson(historyPath)) as { answers: Record<string, string> } | null;
+    expect(saved?.answers[TODAY]).toBeDefined();
   });
 
   it("changes at midnight UTC and avoids recent answers", async () => {
