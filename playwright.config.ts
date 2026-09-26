@@ -16,6 +16,8 @@ export default defineConfig({
   use: {
     baseURL: APP_URL,
     trace: "retain-on-failure",
+    // Service workers would hide requests from page.route(); pwa.spec.ts opts back in.
+    serviceWorkers: "block",
     screenshot: "only-on-failure",
   },
   projects: [

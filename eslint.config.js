@@ -50,4 +50,8 @@ export default ts.config(
     files: ["**/*.js"],
     ...ts.configs.disableTypeChecked,
   },
+  {
+    files: ["src/client/public/sw.js"],
+    languageOptions: { globals: globals.serviceworker },
+  },
 );
