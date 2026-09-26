@@ -1,8 +1,16 @@
 node_modules
-drivers.json
-stats.json
-.idea
+dist
+coverage
 .DS_Store
+.idea
+
+# Game data written by a locally run server (DATA_DIR defaults to ./data).
+data
+
 # Playwright run output
 test-results
 playwright-report
+
+# Written into assets/ by the legacy server; goes away with it.
+drivers.json
+stats.json
