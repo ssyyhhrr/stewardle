@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Guidance for Claude sessions working on Stewardle. For what the game does, read
-`docs/spec.md`; for how it is deployed, `docs/runtime.md`.
+`docs/spec.md`; for why, `docs/decisions.md`; for how it is deployed,
+`docs/runtime.md`.
 
 ## Commands
 

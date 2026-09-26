@@ -106,7 +106,8 @@ tests/
   support/   fake Jolpica server, app launcher, fixture loaders
   fixtures/  recorded Jolpica responses and original-site localStorage
 scripts/     fixture recorders, icon renderer, dev runner, fake Jolpica
-docs/        spec.md (what the game does), runtime.md (how to run it)
+docs/        spec.md (what the game does), runtime.md (how to run it),
+             decisions.md (why it is the way it is)
 ```
 
 The server scores every guess and signs each player's progress into a token,
