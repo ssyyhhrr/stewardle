@@ -1,5 +1,13 @@
+# Only what the build stage needs; everything else stays out of the context.
 node_modules
-drivers.json
-stats.json
+dist
+data
+coverage
+test-results
+playwright-report
+.git
+.github
 .idea
 .DS_Store
+*.md
+!README.md
