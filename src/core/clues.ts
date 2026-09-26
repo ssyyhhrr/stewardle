@@ -3,6 +3,7 @@
  * This is the heart of the game and the only place the rules are written down.
  */
 import { ageOn, type DayKey } from "./calendar";
+import { UNKNOWN_FLAG } from "./nationalities";
 import { currentTeam, type Driver } from "./roster";
 
 /**
@@ -45,10 +46,23 @@ function compareTeams(guess: Driver, answer: Driver): Verdict {
   return answer.teams.some((team) => team.id === guessTeam) ? "previous" : "incorrect";
 }
 
+/**
+ * Same country? Compares flag codes, because Jolpica has spelled one
+ * nationality two ways ("Argentine"/"Argentinian"); the original game compared
+ * flags too. Unknown nationalities (the "xx" flag) fall back to the words.
+ */
+function compareNationalities(guess: Driver, answer: Driver): Verdict {
+  const same =
+    guess.flag !== UNKNOWN_FLAG && answer.flag !== UNKNOWN_FLAG
+      ? guess.flag === answer.flag
+      : guess.nationality === answer.nationality;
+  return same ? "correct" : "incorrect";
+}
+
 /** Scores `guess` against `answer`; ages are taken on the puzzle `day`. */
 export function compareGuess(guess: Driver, answer: Driver, day: DayKey): Feedback {
   return {
-    nationality: guess.nationality === answer.nationality ? "correct" : "incorrect",
+    nationality: compareNationalities(guess, answer),
     team: compareTeams(guess, answer),
     number: compareNumbers(guess.number, answer.number),
     age: compareNumbers(ageOn(guess.dateOfBirth, day), ageOn(answer.dateOfBirth, day)),

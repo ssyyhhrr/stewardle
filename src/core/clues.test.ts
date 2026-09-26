@@ -38,6 +38,15 @@ describe("compareGuess", () => {
     expect(compareGuess(named(roster, "Valtteri Bottas"), leclerc, puzzleDay).team).toBe("incorrect");
   });
 
+  it("compares countries by flag, so two spellings of one nationality match", () => {
+    const colapinto = named(roster, "Franco Colapinto");
+    const respelled = { ...colapinto, id: "respelled", nationality: "Argentinian" };
+    expect(compareGuess(respelled, colapinto, puzzleDay).nationality).toBe("correct");
+    const mystery = { ...colapinto, id: "mystery", nationality: "Martian", flag: "xx" };
+    expect(compareGuess(mystery, { ...mystery, id: "other" }, puzzleDay).nationality).toBe("correct");
+    expect(compareGuess(mystery, colapinto, puzzleDay).nationality).toBe("incorrect");
+  });
+
   it("compares ages on the puzzle day", () => {
     // One day younger: on 16 Oct Leclerc has turned 29 but the twin is still 28.
     const twin = { ...leclerc, id: "twin", dateOfBirth: "1997-10-17" };
