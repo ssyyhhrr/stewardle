@@ -12,20 +12,39 @@ const snapshot = (fetchedAt: string) => ({ fetchedAt, drivers: [] });
 
 describe("roster state", () => {
   it("uses the first roster immediately", () => {
-    expect(addFetchedRoster(EMPTY_ROSTER_STATE, snapshot("a"), today)).toEqual({
+    expect(addFetchedRoster(EMPTY_ROSTER_STATE, snapshot("a"), today, today)).toEqual({
       active: snapshot("a"),
       pending: null,
     });
   });
 
   it("holds later rosters until the next day", () => {
-    const state = addFetchedRoster({ active: snapshot("a"), pending: null }, snapshot("b"), today);
+    const state = addFetchedRoster({ active: snapshot("a"), pending: null }, snapshot("b"), today, today);
     expect(resolveRoster(state, today).active?.fetchedAt).toBe("a");
     expect(resolveRoster(state, addDays(today, 1))).toEqual({ active: snapshot("b"), pending: null });
   });
 
+  it("dates a refresh by when it started, even if it finished after midnight", () => {
+    const tomorrow = addDays(today, 1);
+    const late = addFetchedRoster({ active: snapshot("a"), pending: null }, snapshot("b"), today, tomorrow);
+    expect(late).toEqual({ active: snapshot("b"), pending: null });
+  });
+
+  it("promotes a due pending roster before adding another", () => {
+    const tomorrow = addDays(today, 1);
+    const withPending = addFetchedRoster(
+      { active: snapshot("a"), pending: null },
+      snapshot("b"),
+      today,
+      today,
+    );
+    const next = addFetchedRoster(withPending, snapshot("c"), tomorrow, tomorrow);
+    expect(next.active?.fetchedAt).toBe("b");
+    expect(next.pending).toMatchObject({ fetchedAt: "c", effectiveFrom: addDays(tomorrow, 1) });
+  });
+
   it("reads back what it saved and drops malformed parts", () => {
-    const state = addFetchedRoster({ active: snapshot("a"), pending: null }, snapshot("b"), today);
+    const state = addFetchedRoster({ active: snapshot("a"), pending: null }, snapshot("b"), today, today);
     expect(parseRosterState(JSON.parse(JSON.stringify(state)))).toEqual(state);
     expect(
       parseRosterState({ active: { fetchedAt: 1 }, pending: { ...snapshot("b"), effectiveFrom: "soon" } }),

@@ -45,13 +45,13 @@ contract.
 ## Data directory
 
 Mount it as a volume; the image declares `VOLUME /data`. All files are written
-atomically (temp file + rename) with mode `0600`.
+atomically (fsynced temp file, rename, directory fsync) with mode `0600`.
 
 | File           | Contents                                                       | If lost                                                                                                              |
 | -------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `history.json` | `{"version":1,"answers":{"YYYY-MM-DD":"driverId"}}`            | Today's answer is re-picked (players mid-game see different clues) and the 14-day cooldown restarts. **Back it up.** |
 | `roster.json`  | The active driver roster and, after 23:30 UTC, the pending one | Refetched from Jolpica on the next start                                                                             |
-| `secret`       | Token-signing key (only when `STEWARDLE_SECRET` is unset)      | Regenerated; every in-progress game restarts                                                                         |
+| `secret`       | Token-signing key (only when `STEWARDLE_SECRET` is unset)      | Regenerated; players mid-game see their board restart on their next guess                                            |
 
 ## Network
 

@@ -12,7 +12,7 @@ import { recordedRoster } from "../../tests/support/recorded-roster";
 import type { RosterSnapshot } from "../core/roster-state";
 import { GameService } from "./game";
 import { silentLogger } from "./log";
-import { ensureRoster, loadSecret, msUntilNextRefresh, scheduleNightlyRefresh } from "./startup";
+import { ensureRoster, loadSecret, msUntilNextRefresh, refreshOnce, scheduleNightlyRefresh } from "./startup";
 
 const snapshot: RosterSnapshot = { fetchedAt: "2026-09-26T00:00:00.000Z", drivers: recordedRoster() };
 
@@ -83,6 +83,20 @@ describe("ensureRoster", () => {
     await new Promise((resolve) => setImmediate(resolve));
     expect(refreshed).toBe(1);
     expect(game.rosterStatus.pendingFrom).not.toBeNull();
+  });
+});
+
+describe("refreshOnce", () => {
+  it("dates a refresh by when it started, so one that ends after midnight isn't a day late", async () => {
+    const { clock, timing } = fakeTiming(Date.UTC(2026, 8, 26, 23, 50));
+    const game = await emptyGame(clock);
+    await game.addRoster(snapshot);
+    const slowFetch = (): Promise<RosterSnapshot> => {
+      clock.now = Date.UTC(2026, 8, 27, 0, 10); // finishes after midnight
+      return Promise.resolve({ ...snapshot, fetchedAt: "2026-09-27T00:10:00.000Z" });
+    };
+    expect(await refreshOnce(game, slowFetch, timing)).toBe(true);
+    expect(game.rosterStatus).toEqual({ activeFetchedAt: "2026-09-27T00:10:00.000Z", pendingFrom: null });
   });
 });
 
