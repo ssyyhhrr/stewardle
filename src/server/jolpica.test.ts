@@ -52,6 +52,17 @@ describe("fetchRoster", () => {
     );
   });
 
+  it("falls back to standings order, not last season's race, when the latest race fails", async () => {
+    fake.failPath(`${String(recordedSeason)}/last/results.json`, 503);
+    const snapshot = await fetchRoster(options());
+    expect(fake.requests).not.toContain(`${String(recordedSeason - 1)}/last/results.json`);
+    const lawson = snapshot.drivers.find((d) => d.id === "lawson");
+    // Standings list 2026 teams by first appearance (RB, then Red Bull), so without the race Red Bull comes last.
+    expect(lawson?.teams.at(-1)?.id).toBe("red");
+    const hulkenberg = snapshot.drivers.find((d) => d.id === "hulkenberg");
+    expect(hulkenberg?.teams.at(-1)?.id).toBe("audi");
+  });
+
   it("tolerates a new season that doesn't exist yet", async () => {
     // One year after the recordings: that season 404s, and so does its last race.
     const later = options({ now: () => Date.UTC(recordedSeason + 1, 0, 2) });

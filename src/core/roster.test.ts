@@ -48,6 +48,17 @@ describe("buildRoster on recorded data", () => {
     expect(currentTeam(lawson).id).toBe("rb");
   });
 
+  it("ignores a latest race older than the newest standings", () => {
+    const previousSeasonRace = {
+      season: 2025,
+      entries: [{ driverId: "hulkenberg", constructor: { constructorId: "sauber", name: "Sauber" } }],
+    };
+    const hulkenberg = buildRoster(recordedStandings(), previousSeasonRace).find(
+      (d) => d.id === "hulkenberg",
+    );
+    expect(hulkenberg && currentTeam(hulkenberg).id).toBe("audi");
+  });
+
   it("gives new teams a brand even though no table entry predates them", () => {
     expect(currentTeam(named(roster, "Valtteri Bottas")).id).toBe("cadillac");
     expect(teamIds("Nico Hülkenberg").slice(-2)).toEqual(["kick", "audi"]);

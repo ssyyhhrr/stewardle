@@ -26,6 +26,8 @@ export interface FakeJolpica {
   failWith(status: number | null): void;
   /** Makes only the next `count` requests fail with `status`. */
   failNext(count: number, status: number): void;
+  /** Makes every request for one API path fail with `status`. */
+  failPath(apiPath: string, status: number): void;
   close(): Promise<void>;
 }
 
@@ -43,6 +45,7 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
   let failure: number | null = null;
   let failuresLeft = 0;
   let transientStatus = 500;
+  const failingPaths = new Map<string, number>();
 
   const server: Server = createServer((req, res) => {
     const apiPath = apiPathOf(req.url ?? "/");
@@ -54,6 +57,11 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
     if (failuresLeft > 0) {
       failuresLeft -= 1;
       reply(transientStatus, JSON.stringify({ detail: "injected transient failure" }));
+      return;
+    }
+    const pathFailure = apiPath === null ? undefined : failingPaths.get(apiPath);
+    if (pathFailure !== undefined) {
+      reply(pathFailure, JSON.stringify({ detail: "injected path failure" }));
       return;
     }
     if (failure !== null) {
@@ -86,6 +94,9 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
     failNext(count, status) {
       failuresLeft = count;
       transientStatus = status;
+    },
+    failPath(apiPath, status) {
+      failingPaths.set(apiPath, status);
     },
     close: () =>
       new Promise((resolve) => {

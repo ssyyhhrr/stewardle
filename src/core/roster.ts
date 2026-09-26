@@ -216,13 +216,13 @@ export function buildRoster(seasons: readonly SeasonStandings[], latestRace: Lat
       drafts.set(entry.driver.driverId, draft);
     }
   }
-  for (const entry of latestRace?.entries ?? []) {
+  // A race from before the newest standings would put drivers' old teams last; ignore it.
+  const newestSeason = Math.max(...ordered.filter((s) => s.standings.length > 0).map((s) => s.season));
+  const race = latestRace && latestRace.season >= newestSeason ? latestRace : null;
+  for (const entry of race?.entries ?? []) {
     const draft = drafts.get(entry.driverId);
-    if (draft && latestRace) {
-      pushTeam(
-        draft.teams,
-        brandFor(entry.constructor.constructorId, entry.constructor.name, latestRace.season),
-      );
+    if (draft && race) {
+      pushTeam(draft.teams, brandFor(entry.constructor.constructorId, entry.constructor.name, race.season));
     }
   }
   return [...drafts.values()].map(({ info, number, firstSeason, wins, teams }) => ({
