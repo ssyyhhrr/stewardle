@@ -14,7 +14,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 
-const FIXTURE_DIR = path.resolve(__dirname, "../fixtures/jolpica");
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "../fixtures/jolpica");
 
 /** A running fake; `baseUrl` is what a client should use as its Jolpica root. */
 export interface FakeJolpica {
@@ -47,11 +47,21 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
       res.writeHead(status, { "content-type": "application/json" });
       res.end(body);
     };
-    if (failure !== null) return reply(failure, JSON.stringify({ detail: "injected failure" }));
-    if (!apiPath) return reply(404, JSON.stringify({ detail: "not a Jolpica path" }));
+    if (failure !== null) {
+      reply(failure, JSON.stringify({ detail: "injected failure" }));
+      return;
+    }
+    if (!apiPath) {
+      reply(404, JSON.stringify({ detail: "not a Jolpica path" }));
+      return;
+    }
     readFile(path.join(FIXTURE_DIR, apiPath), "utf8").then(
-      (body) => reply(200, body),
-      () => reply(404, JSON.stringify({ detail: `no fixture for ${apiPath}` })),
+      (body) => {
+        reply(200, body);
+      },
+      () => {
+        reply(404, JSON.stringify({ detail: `no fixture for ${apiPath}` }));
+      },
     );
   });
 
@@ -64,6 +74,11 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
     failWith(status) {
       failure = status;
     },
-    close: () => new Promise((resolve) => server.close(() => resolve())),
+    close: () =>
+      new Promise((resolve) => {
+        server.close(() => {
+          resolve();
+        });
+      }),
   };
 }
