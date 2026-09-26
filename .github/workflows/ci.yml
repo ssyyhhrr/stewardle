@@ -27,3 +27,60 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+
+  docker:
+    # Builds the production image on every push, smoke-tests it against the
+    # fake Jolpica API, and publishes it to Docker Hub from main when the
+    # DOCKERHUB_USERNAME / DOCKERHUB_TOKEN repository secrets are set.
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_TOKEN != '' && secrets.DOCKERHUB_USERNAME != '' }}
+      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image for the smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: stewardle:ci
+      - name: Smoke-test the container
+        run: |
+          npm run fake-jolpica &
+          docker run -d --name stewardle --network host \
+            -e PORT=3000 -e JOLPICA_BASE_URL=http://127.0.0.1:4010/ergast/f1 \
+            -v stewardle-data:/data stewardle:ci
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/healthz && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3000/api/puzzle | head -c 200
+          curl -fsS -o /dev/null http://127.0.0.1:3000/
+          docker logs stewardle
+      - name: Explain why nothing was published
+        if: env.PUBLISH == 'true' && env.HAS_DOCKERHUB != 'true'
+        run: echo "::notice::DOCKERHUB_USERNAME/DOCKERHUB_TOKEN secrets are not set, so the image was built and tested but not pushed."
+      - uses: docker/login-action@v3
+        if: env.PUBLISH == 'true' && env.HAS_DOCKERHUB == 'true'
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Publish syhr/stewardle
+        if: env.PUBLISH == 'true' && env.HAS_DOCKERHUB == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            syhr/stewardle:latest
+            syhr/stewardle:${{ github.sha }}
