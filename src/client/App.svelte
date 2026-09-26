@@ -62,7 +62,7 @@
         <GuessInput
           drivers={game.puzzle.drivers}
           exclude={game.guessedIds}
-          disabled={game.busy}
+          busy={game.busy}
           shakes={game.shakes}
           onguess={(id: string) => void game.guess(id)}
           onreject={() => {
