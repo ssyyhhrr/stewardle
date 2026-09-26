@@ -9,7 +9,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const FIXTURE_DIR = path.resolve(__dirname, "../../fixtures/jolpica");
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "../../fixtures/jolpica");
 
 /** A tile's verdict, named as the page's CSS classes name them. */
 export type TileState = "correct" | "incorrect" | "previous" | "up" | "down";
@@ -115,7 +115,11 @@ export function expectedStates(guessName: string, answerName: string, day = new 
   const answer = driverNamed(answerName);
   const guessTeam = guess.teams.at(-1);
   const teamState: TileState =
-    guessTeam === answer.teams.at(-1) ? "correct" : answer.teams.includes(guessTeam ?? "") ? "previous" : "incorrect";
+    guessTeam === answer.teams.at(-1)
+      ? "correct"
+      : answer.teams.includes(guessTeam ?? "")
+        ? "previous"
+        : "incorrect";
   return [
     guess.nationality === answer.nationality ? "correct" : "incorrect",
     teamState,

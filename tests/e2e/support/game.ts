@@ -40,7 +40,11 @@ export async function openGame(page: Page): Promise<Game> {
 
 /** High-level actions and readings on the game page. */
 export class Game {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   get input(): Locator {
     return this.page.getByPlaceholder("Driver");
@@ -78,7 +82,9 @@ export class Game {
 
   /** Rows that show a guessed driver. */
   async filledRowCount(): Promise<number> {
-    return this.rows.evaluateAll((rows) => rows.filter((r) => (r.textContent ?? "").trim() !== "" || r.querySelector("img")).length);
+    return this.rows.evaluateAll(
+      (rows) => rows.filter((r) => r.textContent.trim() !== "" || r.querySelector("img")).length,
+    );
   }
 
   /** Rows whose six clue tiles all carry a verdict. */
@@ -124,9 +130,14 @@ export class Game {
 
   /** Shares the result from the end-of-game panel and returns the text produced. */
   async share(): Promise<string> {
-    await this.page.locator("#share-btn").or(this.page.getByRole("button", { name: /^share$/i })).first().click();
+    await this.page
+      .locator("#share-btn")
+      .or(this.page.getByRole("button", { name: /^share$/i }))
+      .first()
+      .click();
     const copy = this.page.locator(".copy .btn").or(this.page.getByRole("button", { name: /^copy$/i }));
-    const shared = async (): Promise<string[]> => this.page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
+    const shared = async (): Promise<string[]> =>
+      this.page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
     await expect
       .poll(
         async () => {
@@ -136,7 +147,8 @@ export class Game {
         { timeout: 10_000 },
       )
       .toBeGreaterThan(0);
-    return (await shared()).at(-1)!;
+    const texts = await shared();
+    return texts[texts.length - 1] ?? "";
   }
 
   /** Product of the opacities of an element and its ancestors (1 = fully shown). */
@@ -164,7 +176,7 @@ export class Game {
 
   /** Dismisses whichever modal is open by clicking the dimmed backdrop. */
   async closeModal(): Promise<void> {
-    const viewport = this.page.viewportSize()!;
+    const viewport = this.page.viewportSize() ?? { width: 1280, height: 720 };
     // The legacy modals ignore clicks for 500 ms after opening; retry until closed.
     await expect
       .poll(async () => {
@@ -195,8 +207,15 @@ export class Game {
   /** The numbers in the statistics dialog, once any count-up animation settles. */
   async readStats(): Promise<{ played: number; won: number; lost: number; streak: number; max: number }> {
     const text = await this.statsDialog.first().innerText();
-    const read = (label: string): number => Number(new RegExp(`(\\d+)\\s*${label}`, "i").exec(text)?.[1] ?? NaN);
-    return { played: read("played"), won: read("won"), lost: read("lost"), streak: read("streak"), max: read("max streak") };
+    const read = (label: string): number =>
+      Number(new RegExp(`(\\d+)\\s*${label}`, "i").exec(text)?.[1] ?? NaN);
+    return {
+      played: read("played"),
+      won: read("won"),
+      lost: read("lost"),
+      streak: read("streak"),
+      max: read("max streak"),
+    };
   }
 
   /** Guess-distribution counts for 1..6 guesses. */
@@ -206,6 +225,9 @@ export class Game {
 
   /** Background colour of the first tile carrying the given verdict. */
   async tileColour(state: TileState): Promise<string> {
-    return this.page.locator(`.board .frame.${state}`).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+    return this.page
+      .locator(`.board .frame.${state}`)
+      .first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
   }
 }

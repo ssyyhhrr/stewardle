@@ -5,7 +5,7 @@
  */
 import { expect, test } from "@playwright/test";
 import { openGame } from "./support/game";
-import { emojiRow, expectedStates, gameNumber } from "./support/oracle";
+import { emojiRow, expectedStates, gameNumber, type TileState } from "./support/oracle";
 import { ANSWER_NAME, WRONG_GUESSES } from "./support/scenario";
 
 const VICTORY_CALLS = [
@@ -27,7 +27,14 @@ test("a win reveals the driver, starts the countdown and shares the grid", async
   await game.guess(WRONG_GUESSES[0]);
   await game.guess(ANSWER_NAME);
 
-  expect(await game.allRowStates()).toContainEqual(["correct", "correct", "correct", "correct", "correct", "correct"]);
+  expect(await game.allRowStates()).toContainEqual([
+    "correct",
+    "correct",
+    "correct",
+    "correct",
+    "correct",
+    "correct",
+  ]);
   await expect(game.headline()).toBeVisible();
   expect(VICTORY_CALLS).toContain((await game.headline().innerText()).trim());
   expect(await game.revealedDriver()).toBe(ANSWER_NAME);
@@ -35,7 +42,10 @@ test("a win reveals the driver, starts the countdown and shares the grid", async
   await expect(game.input).toHaveCount(0);
 
   const shared = await game.share();
-  const rows = [emojiRow(expectedStates(WRONG_GUESSES[0], ANSWER_NAME)), emojiRow(Array(6).fill("correct"))];
+  const rows = [
+    emojiRow(expectedStates(WRONG_GUESSES[0], ANSWER_NAME)),
+    emojiRow(Array<TileState>(6).fill("correct")),
+  ];
   expect(shared).toBe(`Stewardle ${gameNumber()} 2/6\n\n${rows.join("\n")}\n`);
 });
 

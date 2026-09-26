@@ -40,6 +40,7 @@
 ---
 
 <!-- ABOUT THE PROJECT -->
+
 ## 🏎️ About The Project
 
 <p float="left">
@@ -51,6 +52,7 @@ Stewardle is a daily guessing game for Formula 1 fans. Each day, a random F1 dri
 ---
 
 <!-- DOCKER -->
+
 ## 🐳 Docker
 
 A Docker image is available on [Docker Hub](https://hub.docker.com/r/syhr/stewardle).
@@ -75,6 +77,7 @@ services:
 ---
 
 <!-- CONTRIBUTING -->
+
 ## 🤝 Contributing
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
@@ -90,6 +93,7 @@ Don't forget to give the project a star! Thanks again!
 ---
 
 <!-- LICENSE -->
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
@@ -97,6 +101,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ---
 
 <!-- CONTACT -->
+
 ## 📬 Contact
 
 Rhys Bishop - [https://sy.hr/](https://sy.hr/) - mail@rhysbi.shop
@@ -105,6 +110,7 @@ Project Link: [https://github.com/ssyyhhrr/stewardle](https://github.com/ssyyhhr
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/ssyyhhrr/stewardle.svg?style=for-the-badge
 [contributors-url]: https://github.com/ssyyhhrr/stewardle/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ssyyhhrr/stewardle.svg?style=for-the-badge

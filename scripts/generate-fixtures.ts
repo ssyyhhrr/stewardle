@@ -15,7 +15,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const BASE_URL = process.env["JOLPICA_BASE_URL"] ?? "https://api.jolpi.ca/ergast/f1";
-const FIXTURE_DIR = path.resolve(__dirname, "../tests/fixtures/jolpica");
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "../tests/fixtures/jolpica");
 const FIRST_SEASON = 2000;
 // Jolpica allows ~4 requests/second; stay well under it.
 const DELAY_MS = 350;
@@ -41,7 +41,6 @@ async function fetchJson(apiPath: string): Promise<unknown> {
   }
 }
 
-async function main(): Promise<void> {
 const currentSeason = new Date().getUTCFullYear();
 const recorded: string[] = [];
 for (const apiPath of pathsToRecord(currentSeason)) {
@@ -57,7 +56,3 @@ for (const apiPath of pathsToRecord(currentSeason)) {
 const manifest = { capturedAt: new Date().toISOString(), currentSeason, paths: recorded };
 await writeFile(path.join(FIXTURE_DIR, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 process.stdout.write(`Recorded ${recorded.length} responses.\n`);
-}
-
-// Not top-level await: the package is still CommonJS while the old server exists.
-void main();

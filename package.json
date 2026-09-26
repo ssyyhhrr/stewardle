@@ -1,31 +1,64 @@
 {
   "name": "stewardle",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "version": "2.0.0",
+  "private": true,
+  "description": "A daily Wordle-style game: guess the F1 Driver of the Day from clues about nationality, team, number, age, debut and wins.",
+  "license": "MIT",
+  "author": "Rhys Bishop <mail@rhysbi.shop>",
+  "repository": "github:ssyyhhrr/stewardle",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "vite build && vite build --ssr src/server/main.ts --outDir dist/server --emptyOutDir",
+    "start": "node dist/server/main.js",
+    "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:unit": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
+    "test": "npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
     "fixtures": "tsx scripts/generate-fixtures.ts"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
+    "@hono/node-server": "2.1.1",
     "axios": "^1.15.0",
     "dayjs": "^1.11.7",
     "ejs": "^3.1.8",
     "express": "^4.18.1",
+    "hono": "4.13.9",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "node-schedule": "^2.1.0",
     "process": "^0.11.10",
-    "serve-favicon": "^2.5.0",
-    "uuid": "^9.0.0",
-    "xml-js": "^1.6.11"
+    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.56.1",
-    "@types/node": "26.6.3",
+    "@eslint/js": "10.0.1",
+    "@fontsource/titillium-web": "5.3.0",
+    "@lucide/svelte": "1.48.0",
+    "@playwright/test": "1.63.0",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "24.19.0",
+    "@vitest/coverage-v8": "5.0.2",
+    "eslint": "10.11.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-svelte": "3.23.0",
+    "globals": "17.12.0",
+    "prettier": "3.9.9",
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
     "tsx": "4.23.15",
-    "typescript": "7.0.2"
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  },
+  "allowScripts": {
+    "esbuild": false
   }
 }

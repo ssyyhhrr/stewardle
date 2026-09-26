@@ -12,12 +12,17 @@ test("high contrast recolours tiles and is remembered", async ({ page }) => {
   await game.guess(WRONG_GUESSES[0]); // has a correct (team) tile
   const settled = async (): Promise<string> => {
     let last = "";
-    await expect.poll(async () => {
-      const now = await game.tileColour("correct");
-      const stable = now === last;
-      last = now;
-      return stable;
-    }, { intervals: [300] }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          const now = await game.tileColour("correct");
+          const stable = now === last;
+          last = now;
+          return stable;
+        },
+        { intervals: [300] },
+      )
+      .toBe(true);
     return last;
   };
   const normal = await settled();
