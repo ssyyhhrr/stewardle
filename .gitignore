@@ -3,3 +3,6 @@ drivers.json
 stats.json
 .idea
 .DS_Store
+# Playwright run output
+test-results
+playwright-report
