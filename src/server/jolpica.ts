@@ -66,19 +66,26 @@ async function getJson(options: JolpicaOptions, apiPath: string): Promise<unknow
 }
 
 /**
- * The most recent race: this season's, or last season's before the first
- * race of the year. Only used to settle drivers' current teams, so failing to
- * get it degrades gracefully instead of failing the refresh.
+ * The most recent race: this season's, or last season's if this one hasn't
+ * had a race yet. Only used to settle drivers' current teams, so a failed
+ * request returns null (standings order decides) rather than failing the
+ * refresh. It must not fall back to last season on a *failure*: that race
+ * would put drivers' previous teams last.
  */
 async function latestRace(options: JolpicaOptions, season: number): Promise<LatestRace | null> {
   for (const year of [season, season - 1]) {
+    let race: LatestRace | null;
     try {
-      const race = parseLatestRace(year, await getJson(options, `${String(year)}/last/results.json`));
-      if (race) return race;
+      race = parseLatestRace(year, await getJson(options, `${String(year)}/last/results.json`));
     } catch (error) {
-      options.log.warn("could not fetch the latest race", { season: year, error: String(error) });
+      if (!(error instanceof NotFoundError)) {
+        options.log.warn("could not fetch the latest race", { season: year, error: String(error) });
+        return null;
+      }
+      race = null; // a season that doesn't exist yet: try the previous one
     }
     await options.sleep(options.requestGapMs ?? 300);
+    if (race) return race;
   }
   return null;
 }
