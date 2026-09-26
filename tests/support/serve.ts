@@ -2,14 +2,14 @@
  * Starts the app under test for Playwright: a fake Jolpica API plus the game
  * server, with today's answer seeded through the server's data files.
  *
- * This is the only test code that knows how a particular implementation
- * stores its data. The specs talk to the app purely through the browser, so
- * the same specs ran against the legacy Express server before the rewrite
- * and run against its replacement now.
+ * This is the only test code that knows how the app stores its data. The
+ * specs talk to the app purely through the browser; that is how the same
+ * specs first ran against the original Express app (commit a775040) and then
+ * judged its replacement.
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { startFakeJolpica } from "./fake-jolpica";
@@ -23,35 +23,6 @@ interface LaunchPlan {
   command: string;
   args: string[];
   env: NodeJS.ProcessEnv;
-}
-
-/**
- * Legacy server: copied to a temp dir so its writes to ./assets stay out of
- * the repo. It has no base-URL setting, so it reaches the fake through
- * HTTPS_PROXY; its stats.json is seeded so today's pick is ANSWER_ID.
- */
-async function startLegacy(fakePort: number): Promise<LaunchPlan> {
-  const dir = await mkdtemp(path.join(os.tmpdir(), "stewardle-legacy-"));
-  for (const entry of ["app.js", "views", "assets"]) {
-    await cp(path.join(ROOT, entry), path.join(dir, entry), { recursive: true });
-  }
-  // app.js is CommonJS; the repo's own package.json declares ES modules.
-  await writeFile(
-    path.join(dir, "package.json"),
-    JSON.stringify({ name: "stewardle-legacy", type: "commonjs" }),
-  );
-  await symlink(path.join(ROOT, "node_modules"), path.join(dir, "node_modules"));
-  await writeFile(
-    path.join(dir, "assets/stats.json"),
-    JSON.stringify({ [todayKey()]: { driver: ANSWER_ID } }),
-  );
-  const proxy = `http://127.0.0.1:${fakePort}`;
-  return {
-    dir,
-    command: "node",
-    args: ["app.js"],
-    env: { ...process.env, TZ: "UTC", HTTPS_PROXY: proxy, https_proxy: proxy, NO_PROXY: "", no_proxy: "" },
-  };
 }
 
 /**
@@ -85,11 +56,7 @@ async function startApp(fakeBaseUrl: string): Promise<LaunchPlan> {
 
 async function main(): Promise<void> {
   const fake = await startFakeJolpica();
-  // STEWARDLE_E2E_TARGET=legacy runs the specs against the original Express app instead.
-  const app =
-    process.env["STEWARDLE_E2E_TARGET"] === "legacy"
-      ? await startLegacy(fake.port)
-      : await startApp(fake.baseUrl);
+  const app = await startApp(fake.baseUrl);
   process.stdout.write(`fake Jolpica on ${fake.baseUrl}; app on port ${APP_PORT}\n`);
 
   const child: ChildProcess = spawn(app.command, app.args, { cwd: app.dir, env: app.env, stdio: "inherit" });

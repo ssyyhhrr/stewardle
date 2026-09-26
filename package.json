@@ -27,16 +27,7 @@
   },
   "dependencies": {
     "@hono/node-server": "2.1.1",
-    "axios": "^1.15.0",
-    "dayjs": "^1.11.7",
-    "ejs": "^3.1.8",
-    "express": "^4.18.1",
-    "hono": "4.13.9",
-    "lodash": "^4.17.21",
-    "morgan": "^1.10.0",
-    "node-schedule": "^2.1.0",
-    "process": "^0.11.10",
-    "serve-favicon": "^2.5.0"
+    "hono": "4.13.9"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
