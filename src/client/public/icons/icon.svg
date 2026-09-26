@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 216">
+  <!-- Stewardle's logo: a Wordle-style board, one win in three rows. Source for the PNG icons (npm run icons). -->
+  <rect width="216" height="216" rx="30" fill="#000"/>
+  <g fill="#fff">
+    <rect x="11" y="11" width="58" height="58"/>
+    <rect x="79" y="11" width="58" height="58"/>
+    <rect x="147" y="11" width="58" height="58"/>
+    <rect x="11" y="79" width="58" height="58"/>
+  </g>
+  <rect x="79" y="79" width="58" height="58" fill="#d1b036"/>
+  <g fill="#6aaa64">
+    <rect x="147" y="79" width="58" height="58"/>
+    <rect x="11" y="147" width="58" height="58"/>
+    <rect x="79" y="147" width="58" height="58"/>
+    <rect x="147" y="147" width="58" height="58"/>
+  </g>
+</svg>

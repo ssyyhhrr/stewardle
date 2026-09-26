@@ -10,3 +10,10 @@ import App from "./App.svelte";
 const target = document.getElementById("app");
 if (!target) throw new Error("#app element missing from index.html");
 mount(App, { target });
+
+// Installable app + fast reopen. Skipped in development, where it would serve stale Vite modules.
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}

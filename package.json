@@ -22,7 +22,8 @@
     "test:e2e": "playwright test",
     "test": "npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
     "fixtures": "tsx scripts/generate-fixtures.ts",
-    "fixtures:legacy-storage": "tsx scripts/generate-legacy-storage.ts"
+    "fixtures:legacy-storage": "tsx scripts/generate-legacy-storage.ts",
+    "icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.1",
