@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:e2e": "playwright test",
+    "fixtures": "tsx scripts/generate-fixtures.ts"
   },
   "author": "",
   "license": "ISC",
@@ -20,5 +21,11 @@
     "serve-favicon": "^2.5.0",
     "uuid": "^9.0.0",
     "xml-js": "^1.6.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "26.6.3",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
   }
 }
