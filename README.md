@@ -106,7 +106,8 @@ tests/
   support/   fake Jolpica server, app launcher, fixture loaders
   fixtures/  recorded Jolpica responses and original-site localStorage
 scripts/     fixture recorders, icon renderer, dev runner, fake Jolpica
-docs/        spec.md (what the game does), runtime.md (how to run it)
+docs/        spec.md (what the game does), runtime.md (how to run it),
+             decisions.md (why it is the way it is)
 ```
 
 The server scores every guess and signs each player's progress into a token,
@@ -135,3 +136,78 @@ doesn't list. Until then the tile shows a text badge.
 MIT. See [LICENSE](LICENSE).
 
 Created by Rhys Bishop ([syhr](https://sy.hr/)), mail@rhysbi.shop.
+
+## Development
+
+Everyday commands are under [Running it](#running-it) and [Testing](#testing).
+Run `npm test` before every commit. Two more you'll need now and then:
+
+```sh
+npm run format   # rewrite files in Prettier style (npm run format:check only reports)
+npm run icons    # re-render the PNG app icons from src/client/public/icons/icon.svg
+```
+
+### Architecture rules
+
+- **Game rules live in `src/core/` as pure functions with no I/O.** The server and
+  the client both import them. A rule goes there, not in a component or a route.
+- **`src/server/` is a thin Hono layer.**
+  - `game.ts` combines the core rules with the data files.
+  - `app.ts` holds the routes; `token.ts` signs each player's game.
+  - `jolpica.ts` fetches driver data; `startup.ts` handles first boot and the
+    nightly refresh; `main.ts` wires it together.
+- **`src/client/` is Svelte 5 with runes.** `lib/game.svelte.ts` holds the page's
+  state and actions; the components only render.
+- **The answer is secret until the game ends.** The server scores guesses, and the
+  answer leaves it only in the response to a game-ending guess. Never add a
+  route, static file or log line that exposes it.
+- **Days are UTC.** Use `src/core/calendar.ts` for dates and day arithmetic,
+  never inline `Date` maths.
+- **Clues never change mid-day.** A refreshed roster waits for the next midnight
+  (`src/core/roster-state.ts`).
+
+The reasoning behind these and other choices is in
+[docs/decisions.md](docs/decisions.md).
+
+### Conventions
+
+- **TypeScript runs at its strictest** (see `tsconfig.json`, including
+  `erasableSyntaxOnly`: no enums or parameter properties), and ESLint runs
+  typescript-eslint's `strictTypeChecked`. Fix the code rather than loosening
+  either.
+- **Comments explain why**: the constraint, the bug avoided, the alternative
+  rejected. Every exported function and type has a doc comment.
+- **Every test file opens with a comment** saying what it protects and why that
+  matters.
+- **Fixtures are never written by hand.** They are recorded from real data by
+  the scripts in `scripts/`. Tests derive their expectations from the fixtures,
+  or from the independent oracle in `tests/e2e/support/oracle.ts`, never from
+  the app's own code.
+- **End-to-end selectors live only in `tests/e2e/support/game.ts`** and use roles
+  and accessible names. The tile verdict classes (`correct`, `incorrect`,
+  `previous`, `up`, `down`) are part of the contract.
+- **Files stay under about 500 lines**; split them by purpose.
+- **One logical change per commit.** The body explains why, and what was
+  verified.
+
+### Gotchas
+
+- **Node's built-in `fetch` ignores `HTTPS_PROXY`.** Behind an HTTP proxy, run
+  `npm run fixtures` with `NODE_USE_ENV_PROXY=1`, or requests bypass the proxy.
+- **svelte-check can't type a component with no `<script>` block** ("Could not
+  find a declaration file"). Keep one, even if it's empty (see `Footer.svelte`).
+- **WebKit on Linux needs its system libraries:** `npx playwright install-deps
+webkit` as well as `npx playwright install webkit`.
+- **Service workers hide requests from Playwright's `page.route()`.** The e2e
+  config sets `serviceWorkers: "block"`; `pwa.spec.ts` opts back in.
+- **Playwright's WebKit can't reload a service-worker page while offline** (it
+  reports an internal error), so the offline test runs in Chromium only.
+- **`showModal()` focuses a dialog's first button, and WebKit draws a focus ring
+  on it.** `Dialog.svelte` focuses the panel instead.
+- **Tile images (`.frame img`) are absolutely positioned.** A percentage height
+  doesn't resolve against the tile's auto-sized grid row, so tall logos used to
+  spill out.
+- **npm 11 blocks install scripts by default.** esbuild's is explicitly denied in
+  `package.json` (`allowScripts`); it works without it.
+- **Stay on TypeScript 6.x** until typescript-eslint and svelte-check support
+  TypeScript 7 (they didn't as of September 2026).
