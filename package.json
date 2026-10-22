@@ -24,6 +24,7 @@
     "fixtures": "tsx scripts/generate-fixtures.ts",
     "fixtures:legacy-storage": "tsx scripts/generate-legacy-storage.ts",
     "icons": "tsx scripts/generate-icons.ts",
+    "screenshot": "tsx scripts/generate-screenshot.ts",
     "fake-jolpica": "tsx scripts/fake-jolpica.ts"
   },
   "dependencies": {
