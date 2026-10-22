@@ -1,213 +1,167 @@
+<a name="readme-top"></a>
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![Docker Pulls][docker-shield]][docker-url]
+[![MIT License][license-shield]][license-url]
+
+<!-- PROJECT LOGO -->
 <div align="center">
-  <img src="src/client/public/icons/icon.svg" alt="" width="80" height="80">
-  <h1>Stewardle</h1>
-  <p>A daily Wordle-style game for Formula 1 fans: guess the Driver of the Day in six tries.</p>
-  <p>
-    <a href="https://stewardle.com/">Play</a> ·
-    <a href="https://github.com/ssyyhhrr/stewardle/issues">Report a bug</a>
-  </p>
-  <p>
-    <a href="https://github.com/ssyyhhrr/stewardle/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ssyyhhrr/stewardle/actions/workflows/ci.yml/badge.svg"></a>
-    <a href="https://hub.docker.com/r/syhr/stewardle"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/syhr/stewardle.svg"></a>
-    <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/github/license/ssyyhhrr/stewardle.svg"></a>
+  <a href="https://github.com/ssyyhhrr/stewardle/">
+    <img src="src/client/public/icons/icon-192.png" alt="Logo" width="80" height="80">
+  </a>
+  <h3 align="center">Stewardle</h3>
+  <p align="center">
+    A Wordle-inspired game designed for the web. Players must guess the F1 Driver of the Day using statistics retrieved from the Jolpica API. Built with TypeScript, Hono and Svelte.
+    <br />
+    🌐 <a href="https://stewardle.com/">View Demo</a>
+    ·
+    🐛 <a href="https://github.com/ssyyhhrr/stewardle/issues">Report Bug</a>
+    ·
+    ✨ <a href="https://github.com/ssyyhhrr/stewardle/issues">Request Feature</a>
   </p>
 </div>
 
-<img src="docs/screenshot.png" alt="A finished game on a phone" width="300" align="right">
+---
 
-## How to play
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#self-hosting">Self-hosting</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
 
-Every day at midnight UTC a new driver is picked from everyone with a permanent
-car number (anyone who has raced in F1 since 2014). Type a name, pick it from
-the list and each clue tile tells you how close you are:
+---
 
-- **Flag.** Green for the same nationality.
-- **Team.** Green for the same current team, orange if the answer used to drive
-  for your guess's team.
-- **Car number, age, first year and race wins.** Green if equal, otherwise an
-  arrow pointing towards the answer.
+<!-- ABOUT THE PROJECT -->
 
-Win within six guesses to keep your streak, then share the emoji grid. The full
-rules are in [docs/spec.md](docs/spec.md).
+<a name="about-the-project"></a>
 
-<br clear="right">
+## 🏎️ About The Project
 
-## Running it
+<p>
+  <img src=".github/screenshots/stewardle.png" alt="A won game on desktop and on a phone">
+</p>
 
-You need **Node 24** or newer.
+Stewardle is a daily guessing game for Formula 1 fans. Every day at midnight UTC a new driver is picked from everyone with a permanent car number, and you have six guesses to find them. Each guess is scored on six clues:
 
-```sh
-npm ci
-npm run dev          # API server on :3000 plus Vite on :5173 (open that one)
-```
+- **Flag:** green for the same nationality.
+- **Team:** green for the same current team, orange if the answer used to drive for your guess's team.
+- **Car number, age, first year and race wins:** green if equal, otherwise an arrow pointing towards the answer.
 
-The server fetches driver data from [Jolpica](https://github.com/jolpica/jolpica-f1)
-on first start (about ten seconds). To work offline, serve the recorded API
-responses instead:
+Win to keep your streak, then share the emoji grid. The game works on phones and desktops, can be installed as an app, and keeps your statistics in the browser. The answer stays on the server until the game is over.
 
-```sh
-npm run fake-jolpica &    # http://127.0.0.1:4010/ergast/f1
-JOLPICA_BASE_URL=http://127.0.0.1:4010/ergast/f1 npm run dev
-```
+---
 
-Game state goes to `./data` (see `DATA_DIR`). Delete it to start over.
+<!-- SELF-HOSTING -->
 
-## Testing
+<a name="self-hosting"></a>
 
-```sh
-npx playwright install --with-deps chromium webkit   # once
-npm test             # everything: format, lint, typecheck, unit + integration, build, end-to-end
-```
+## 🐳 Self-hosting
 
-Or one piece at a time:
-
-| Command                                 | What it runs                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------- |
-| `npm run lint` / `npm run format:check` | ESLint (strict, type-aware) / Prettier                                    |
-| `npm run typecheck`                     | `tsc` and `svelte-check`                                                  |
-| `npm run test:unit`                     | Vitest: the game rules and the server API, with coverage of `src/core`    |
-| `npm run build && npm run test:e2e`     | Playwright: the real game in Chromium and WebKit, phone and desktop sizes |
-
-The tests never touch the network. They replay real Jolpica responses recorded
-in `tests/fixtures/`, which `npm run fixtures` refreshes (worth doing at the
-start of a season). `npm run fixtures:legacy-storage` re-records what the
-original site stored in players' browsers, for the migration tests.
-
-## Deploying
-
-CI publishes a Docker image, `syhr/stewardle`, on every push to `main` once the
-`DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets are set.
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/syhr/stewardle) (`latest`, plus one tag per commit to `main`).
 
 ```sh
-docker run -d -p 3000:3000 -v stewardle-data:/data --restart unless-stopped syhr/stewardle
+docker run -d --name stewardle -p 3000:3000 -v stewardle-data:/data --restart unless-stopped syhr/stewardle
 ```
 
-Put it behind a reverse proxy for TLS, keep `/data` on a volume and back up
-`history.json`. [docs/runtime.md](docs/runtime.md) has the full contract:
-environment variables, data files, ports, health check, logs and the
-first-boot behaviour.
+Or with Docker Compose:
 
-## How it's built
-
-TypeScript throughout: a [Hono](https://hono.dev) server and a
-[Svelte 5](https://svelte.dev) page, both built with Vite, sharing one set of
-pure game-rule functions.
-
-```
-src/
-  core/      the rules as pure functions: days, roster, clues, daily pick,
-             game session, stats, share text, search, save format, API types
-  server/    Hono app: routes, game service, signed tokens, JSON storage,
-             Jolpica client, startup and the nightly refresh
-  client/    Svelte app: components, the game controller, styles,
-             public/ (flags, logos, icons, manifest, service worker)
-tests/
-  e2e/       Playwright specs and the page object
-  support/   fake Jolpica server, app launcher, fixture loaders
-  fixtures/  recorded Jolpica responses and original-site localStorage
-scripts/     fixture recorders, icon renderer, dev runner, fake Jolpica
-docs/        spec.md (what the game does), runtime.md (how to run it),
-             decisions.md (why it is the way it is)
+```yaml
+services:
+  stewardle:
+    image: syhr/stewardle
+    container_name: stewardle
+    ports:
+      - "3000:3000"
+    volumes:
+      - stewardle-data:/data
+    restart: unless-stopped
+volumes:
+  stewardle-data:
 ```
 
-The server scores every guess and signs each player's progress into a token,
-so the answer is never sent to the browser before the game ends.
+- **First start** fetches driver data from api.jolpi.ca. It retries for about five minutes, then exits so Docker can restart it. The roster refreshes every night at 23:30 UTC.
+- **`/data`** holds `history.json` (past answers: back it up), `roster.json` and `secret`.
+- **Put a reverse proxy in front** for HTTPS, at the root of the site. `GET /healthz` reports health.
+- **Settings** are environment variables, all optional:
 
-### Adding a team logo
+| Variable           | Default                          | Meaning                                                                       |
+| ------------------ | -------------------------------- | ----------------------------------------------------------------------------- |
+| `PORT`             | `3000`                           | Listening port                                                                |
+| `HOST`             | `0.0.0.0`                        | Listening address                                                             |
+| `DATA_DIR`         | `/data` in the image             | Where the game keeps its state                                                |
+| `STEWARDLE_SECRET` | generated into `DATA_DIR/secret` | Key that signs players' games, at least 32 characters                         |
+| `JOLPICA_BASE_URL` | `https://api.jolpi.ca/ergast/f1` | Driver data source; `npm run fake-jolpica` serves recorded data for local use |
 
-Save it as `src/client/public/logos/<team>.webp`. The team id is the one in
-`src/core/teams.ts`, or the Jolpica `constructorId` for a team the table
-doesn't list. Until then the tile shows a text badge.
+To run it without Docker: `npm ci && npm run build && npm start` on Node 24 or newer.
 
-## Credits
+---
 
-- Inspired by [Wordle](https://www.nytimes.com/games/wordle/index.html).
+<!-- CONTRIBUTING -->
+
+<a name="contributing"></a>
+
+## 🤝 Contributing
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+
+Don't forget to give the project a star! Thanks again!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+`npm run dev` starts the game at http://localhost:5173, and `npm test` runs every check (format, lint, typecheck, unit tests, build and the browser tests, which need `npx playwright install --with-deps chromium webkit` once). The tests replay recorded Jolpica responses; `npm run fixtures` re-records them and `npm run screenshot` redraws the picture above.
+
+---
+
+<!-- LICENSE -->
+
+<a name="license"></a>
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
 - Driver data from [Jolpica F1](https://github.com/jolpica/jolpica-f1).
-- Flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT, licence
-  in `src/client/public/flags/`).
+- Flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT, licence in `src/client/public/flags/`).
 - Icons from [Lucide](https://lucide.dev) (ISC).
-- Type is [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) (SIL
-  Open Font License).
-- Team logos and names are trademarks of their owners; Stewardle is an
-  unofficial fan project, not associated with Formula 1 or any team.
+- Type is [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) (SIL Open Font License).
+- Team logos and names are trademarks of their owners. Stewardle is an unofficial fan project, not associated with Formula 1 or any team.
 
-## Licence
+---
 
-MIT. See [LICENSE](LICENSE).
+<!-- CONTACT -->
 
-Created by Rhys Bishop ([syhr](https://sy.hr/)), mail@rhysbi.shop.
+<a name="contact"></a>
 
-## Development
+## 📬 Contact
 
-Everyday commands are under [Running it](#running-it) and [Testing](#testing).
-Run `npm test` before every commit. Two more you'll need now and then:
+Rhys Bishop - [https://sy.hr/](https://sy.hr/) - mail@rhysbi.shop
 
-```sh
-npm run format   # rewrite files in Prettier style (npm run format:check only reports)
-npm run icons    # re-render the PNG app icons from src/client/public/icons/icon.svg
-```
+Project Link: [https://github.com/ssyyhhrr/stewardle](https://github.com/ssyyhhrr/stewardle)
 
-### Architecture rules
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-- **Game rules live in `src/core/` as pure functions with no I/O.** The server and
-  the client both import them. A rule goes there, not in a component or a route.
-- **`src/server/` is a thin Hono layer.**
-  - `game.ts` combines the core rules with the data files.
-  - `app.ts` holds the routes; `token.ts` signs each player's game.
-  - `jolpica.ts` fetches driver data; `startup.ts` handles first boot and the
-    nightly refresh; `main.ts` wires it together.
-- **`src/client/` is Svelte 5 with runes.** `lib/game.svelte.ts` holds the page's
-  state and actions; the components only render.
-- **The answer is secret until the game ends.** The server scores guesses, and the
-  answer leaves it only in the response to a game-ending guess. Never add a
-  route, static file or log line that exposes it.
-- **Days are UTC.** Use `src/core/calendar.ts` for dates and day arithmetic,
-  never inline `Date` maths.
-- **Clues never change mid-day.** A refreshed roster waits for the next midnight
-  (`src/core/roster-state.ts`).
-
-The reasoning behind these and other choices is in
-[docs/decisions.md](docs/decisions.md).
-
-### Conventions
-
-- **TypeScript runs at its strictest** (see `tsconfig.json`, including
-  `erasableSyntaxOnly`: no enums or parameter properties), and ESLint runs
-  typescript-eslint's `strictTypeChecked`. Fix the code rather than loosening
-  either.
-- **Comments explain why**: the constraint, the bug avoided, the alternative
-  rejected. Every exported function and type has a doc comment.
-- **Every test file opens with a comment** saying what it protects and why that
-  matters.
-- **Fixtures are never written by hand.** They are recorded from real data by
-  the scripts in `scripts/`. Tests derive their expectations from the fixtures,
-  or from the independent oracle in `tests/e2e/support/oracle.ts`, never from
-  the app's own code.
-- **End-to-end selectors live only in `tests/e2e/support/game.ts`** and use roles
-  and accessible names. The tile verdict classes (`correct`, `incorrect`,
-  `previous`, `up`, `down`) are part of the contract.
-- **Files stay under about 500 lines**; split them by purpose.
-- **One logical change per commit.** The body explains why, and what was
-  verified.
-
-### Gotchas
-
-- **Node's built-in `fetch` ignores `HTTPS_PROXY`.** Behind an HTTP proxy, run
-  `npm run fixtures` with `NODE_USE_ENV_PROXY=1`, or requests bypass the proxy.
-- **svelte-check can't type a component with no `<script>` block** ("Could not
-  find a declaration file"). Keep one, even if it's empty (see `Footer.svelte`).
-- **WebKit on Linux needs its system libraries:** `npx playwright install-deps
-webkit` as well as `npx playwright install webkit`.
-- **Service workers hide requests from Playwright's `page.route()`.** The e2e
-  config sets `serviceWorkers: "block"`; `pwa.spec.ts` opts back in.
-- **Playwright's WebKit can't reload a service-worker page while offline** (it
-  reports an internal error), so the offline test runs in Chromium only.
-- **`showModal()` focuses a dialog's first button, and WebKit draws a focus ring
-  on it.** `Dialog.svelte` focuses the panel instead.
-- **Tile images (`.frame img`) are absolutely positioned.** A percentage height
-  doesn't resolve against the tile's auto-sized grid row, so tall logos used to
-  spill out.
-- **npm 11 blocks install scripts by default.** esbuild's is explicitly denied in
-  `package.json` (`allowScripts`); it works without it.
-- **Stay on TypeScript 6.x** until typescript-eslint and svelte-check support
-  TypeScript 7 (they didn't as of September 2026).
+[contributors-shield]: https://img.shields.io/github/contributors/ssyyhhrr/stewardle.svg?style=for-the-badge
+[contributors-url]: https://github.com/ssyyhhrr/stewardle/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ssyyhhrr/stewardle.svg?style=for-the-badge
+[forks-url]: https://github.com/ssyyhhrr/stewardle/network/members
+[stars-shield]: https://img.shields.io/github/stars/ssyyhhrr/stewardle.svg?style=for-the-badge
+[stars-url]: https://github.com/ssyyhhrr/stewardle/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ssyyhhrr/stewardle.svg?style=for-the-badge
+[issues-url]: https://github.com/ssyyhhrr/stewardle/issues
+[license-shield]: https://img.shields.io/github/license/ssyyhhrr/stewardle.svg?style=for-the-badge
+[license-url]: https://github.com/ssyyhhrr/stewardle/blob/main/LICENSE
+[docker-shield]: https://img.shields.io/docker/pulls/syhr/stewardle.svg?style=for-the-badge
+[docker-url]: https://hub.docker.com/r/syhr/stewardle
