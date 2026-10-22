@@ -4,7 +4,7 @@
  *
  * This is the only test code that knows how the app stores its data. The
  * specs talk to the app purely through the browser; that is how the same
- * specs first ran against the original Express app (commit a775040) and then
+ * specs first ran against the original Express app (commit 3113373) and then
  * judged its replacement.
  */
 import { spawn, type ChildProcess } from "node:child_process";
