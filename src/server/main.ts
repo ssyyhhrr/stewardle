@@ -1,6 +1,6 @@
 /**
  * Server entry point: reads the environment, makes sure there is driver data,
- * then serves the game. See docs/runtime.md for the deployment contract.
+ * then serves the game. The README's Self-hosting section covers running it.
  */
 import { readdirSync } from "node:fs";
 import path from "node:path";

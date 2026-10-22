@@ -1,6 +1,6 @@
 /**
  * Runtime configuration from environment variables. This is the deployment
- * contract; docs/runtime.md describes each variable for the Ansible side.
+ * contract; the README's Self-hosting section lists each variable.
  */
 import path from "node:path";
 

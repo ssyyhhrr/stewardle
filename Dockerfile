@@ -3,7 +3,7 @@
 #
 # Stage 1 installs dev dependencies and builds; stage 2 is just Node and
 # dist/ (the server bundle includes its dependencies, so no node_modules).
-# Runtime contract: docs/runtime.md.
+# Running it: the README's Self-hosting section.
 
 # Build on the native platform: the output is plain JavaScript, so one build
 # serves every target architecture without emulating npm under QEMU.
