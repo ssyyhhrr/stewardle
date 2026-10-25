@@ -21,7 +21,7 @@ describe("shareText", () => {
       won: true,
       url: "https://stewardle.com",
     });
-    expect(text).toBe("Stewardle 1558 2/6\n\n🟥🟧⬆️⬇️⬆️⬆️\n🟩🟩🟩🟩🟩🟩\n\nhttps://stewardle.com");
+    expect(text).toBe("Stewardle 1558 2/6\n\n⬛🟨⬆️⬇️⬆️⬆️\n🟩🟩🟩🟩🟩🟩\n\nhttps://stewardle.com");
   });
 
   it("shows X/6 for a loss", () => {
@@ -32,6 +32,6 @@ describe("shareText", () => {
       url: "u",
     });
     expect(text.split("\n")[0]).toBe("Stewardle 7 X/6");
-    expect(text.split("\n").filter((line) => line.startsWith("🟥"))).toHaveLength(6);
+    expect(text.split("\n").filter((line) => line.startsWith("⬛"))).toHaveLength(6);
   });
 });

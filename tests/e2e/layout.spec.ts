@@ -2,7 +2,8 @@
  * Protects the layout on every screen the game targets, from a 320px phone
  * to a desktop: nothing may scroll sideways and all seven tiles of a row must
  * be on screen, with a full board and with each dialog open. (The original
- * board was 371px wide and overflowed 360px Android phones.)
+ * board was 371px wide and overflowed 360px Android phones.) Statistics must
+ * also fit a 1280 × 800 laptop without hiding Share, which the original's did.
  */
 import { expect, test } from "@playwright/test";
 import { openGame } from "./support/game";
@@ -36,5 +37,18 @@ test("fits every width from 320px phones to desktops", async ({ page, isMobile }
     await game.openTutorial();
     expect((await overflow()).page, `tutorial at ${String(width)}px`).toBe(0);
     await page.keyboard.press("Escape");
+    await game.changeSettings(async () => {
+      expect((await overflow()).page, `settings at ${String(width)}px`).toBe(0);
+    });
   }
+});
+
+test("statistics fits a 1280 × 800 screen with Share in view", async ({ page, isMobile }) => {
+  test.skip(isMobile, "a desktop size");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const game = await openGame(page);
+  await game.closeModal();
+  for (const name of [...WRONG_GUESSES.slice(0, 3), ANSWER_NAME]) await game.guess(name);
+  await game.openStats();
+  await expect(game.statsDialog.getByRole("button", { name: "Share" })).toBeInViewport({ ratio: 1 });
 });

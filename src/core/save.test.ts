@@ -18,7 +18,7 @@ const feedback = {
 const save = {
   version: SAVE_VERSION,
   stats: { ...EMPTY_STATS, played: 1, won: 1, distribution: [1, 0, 0, 0, 0, 0] },
-  settings: { highContrast: true, tutorialSeen: true },
+  settings: { theme: "light", highContrast: true, tutorialSeen: true },
   game: {
     day: "2026-09-26",
     token: "t",
@@ -43,9 +43,17 @@ describe("parseSave", () => {
   it("defaults missing settings and an unrevealed answer", () => {
     const partial = { version: SAVE_VERSION, game: { ...save.game, answerId: undefined, status: "playing" } };
     const parsed = parseSave(JSON.stringify(partial));
-    expect(parsed.settings).toEqual({ highContrast: false, tutorialSeen: false });
+    expect(parsed.settings).toEqual({ theme: "system", highContrast: false, tutorialSeen: false });
     expect(parsed.game?.answerId).toBeNull();
     expect(parseSave(JSON.stringify({ ...save, game: "none" })).game).toBeNull();
+  });
+
+  it("follows the device theme for saves from before the setting, or with a bad one", () => {
+    for (const theme of [undefined, "sepia", 1]) {
+      const parsed = parseSave(JSON.stringify({ ...save, settings: { highContrast: true, theme } }));
+      expect(parsed.settings.theme).toBe("system");
+      expect(parsed.settings.highContrast).toBe(true);
+    }
   });
 
   it("drops a damaged board but keeps stats and settings", () => {

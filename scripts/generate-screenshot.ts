@@ -7,8 +7,8 @@
  * Every input is pinned so a re-run gives the same picture: the server runs
  * in-process on the recorded Jolpica roster with its clock fixed to the day
  * the fixtures were captured, the browser's clock and Math.random are fixed
- * (so the countdown and the victory headline don't change), and animations
- * are off through reduced motion. Each page is captured whole by stretching
+ * (so the countdown and the victory headline don't change), animations
+ * are off through reduced motion, and the theme is dark. Each page is captured whole by stretching
  * the viewport to the page's height.
  */
 import { existsSync, readdirSync } from "node:fs";
@@ -82,6 +82,8 @@ async function capture(browser: Browser, url: string, layout: (typeof LAYOUTS)[n
     isMobile: layout.isMobile,
     hasTouch: layout.isMobile,
     reducedMotion: "reduce",
+    // The dark theme is the brand's lead look; headless browsers default to light.
+    colorScheme: "dark",
     serviceWorkers: "block",
   });
   const page = await context.newPage();
@@ -92,6 +94,7 @@ async function capture(browser: Browser, url: string, layout: (typeof LAYOUTS)[n
   await captureSharing(page);
   await page.goto("/");
   const game = new Game(page);
+  await game.expectTutorialOpen(true);
   await game.closeModal();
   for (const name of GUESSES) await game.guess(name);
   await page.getByText("The driver was").waitFor();

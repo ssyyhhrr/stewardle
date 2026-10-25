@@ -4,7 +4,7 @@
  * name-based table broke the tile every time a team was renamed or added.
  */
 import { describe, expect, it } from "vitest";
-import { brandFor, fallbackBadge } from "./teams";
+import { FALLBACK_COLOUR, brandFor, fallbackBadge, knownBrandIds, teamColour } from "./teams";
 
 describe("brandFor", () => {
   it("keeps the logo ids the original game used", () => {
@@ -38,5 +38,16 @@ describe("fallbackBadge", () => {
     expect(fallbackBadge("Cadillac F1 Team")).toBe("CADI");
     expect(fallbackBadge("Audi")).toBe("AUDI");
     expect(fallbackBadge("")).toBe("?");
+  });
+});
+
+describe("teamColour", () => {
+  it("gives every known brand its own colour", () => {
+    for (const id of knownBrandIds()) expect(teamColour(id), id).toMatch(/^#[0-9a-f]{6}$/);
+    for (const id of knownBrandIds()) expect(teamColour(id), id).not.toBe(FALLBACK_COLOUR);
+  });
+
+  it("falls back to neutral for a team it has never heard of", () => {
+    expect(teamColour("hypothetical_racing")).toBe(FALLBACK_COLOUR);
   });
 });

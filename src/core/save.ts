@@ -30,8 +30,12 @@ export interface SavedGame {
   readonly answerId: string | null;
 }
 
+/** Light or dark page; "system" follows the device. */
+export type Theme = "system" | "light" | "dark";
+
 /** Display preferences. */
 export interface Settings {
+  readonly theme: Theme;
   readonly highContrast: boolean;
   readonly tutorialSeen: boolean;
 }
@@ -47,11 +51,12 @@ export interface SaveFile {
 export const EMPTY_SAVE: SaveFile = {
   version: SAVE_VERSION,
   stats: EMPTY_STATS,
-  settings: { highContrast: false, tutorialSeen: false },
+  settings: { theme: "system", highContrast: false, tutorialSeen: false },
   game: null,
 };
 
 const VERDICTS: ReadonlySet<string> = new Set<Verdict>(["correct", "incorrect", "previous", "up", "down"]);
+const THEMES: ReadonlySet<string> = new Set<Theme>(["system", "light", "dark"]);
 const STATUSES: ReadonlySet<string> = new Set<GameStatus>(["playing", "won", "lost"]);
 
 function parseFeedback(value: unknown): Feedback | null {
@@ -105,7 +110,15 @@ export function parseSave(text: string | null): SaveFile {
   return {
     version: SAVE_VERSION,
     stats: parseStats(v.stats),
-    settings: { highContrast: settings.highContrast === true, tutorialSeen: settings.tutorialSeen === true },
+    settings: {
+      // Saves from before the theme setting have none, and follow the device.
+      theme:
+        typeof settings.theme === "string" && THEMES.has(settings.theme)
+          ? (settings.theme as Theme)
+          : "system",
+      highContrast: settings.highContrast === true,
+      tutorialSeen: settings.tutorialSeen === true,
+    },
     game: parseGame(v.game),
   };
 }

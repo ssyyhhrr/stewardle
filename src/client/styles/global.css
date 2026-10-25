@@ -1,36 +1,111 @@
 /*
- * Page-wide styles: colours, type, the verdict tile palette (normal and high
- * contrast) and the tile sizing that keeps seven columns on a 320px phone.
+ * Page-wide styles: the design tokens for both themes and both contrast
+ * variants, type, the clue tile in every verdict, and the tile sizing that
+ * keeps seven columns on a 320px phone. Values come from the redesign's
+ * token sheet; the contrast ratios they were chosen for are noted inline.
  */
 :root {
   color-scheme: dark;
-  --bg: #171717;
-  --border: #3a3a3c;
-  --text: #fff;
-  --muted: #d3d3d3;
+  --bg: #0d0f12;
+  --panel: #15181d;
+  /* The driver-code tile; ink on it is 13.6:1. */
+  --code: #23272e;
+  /* Panel borders and dividers (decorative). */
+  --edge: #2a2f37;
+  /* Empty-tile outline and the idle search box: 3.0:1 against the panel. */
+  --empty-edge: #5c6573;
+  --ink: #f2f4f6;
+  /* Labels and secondary text: 7.3:1 against the panel. */
+  --muted: #a0a9b4;
+  /* Brand red: the wordmark's slash and the panel stripes. Never "wrong". */
   --accent: #fd1706;
+  /* Red for links and the focus ring, lightened to clear 4.5:1 on the panel. */
+  --accent-text: #ff3a2a;
+  /* Primary buttons, under white text. */
+  --btn: #d91405;
+  /* The keyboard-selected suggestion. */
+  --hi: #2a3039;
+  --clock-bg: #000;
+  --backdrop: rgb(0 0 0 / 62%);
+  /* The speed lines behind the page. */
+  --line: rgb(255 255 255 / 6%);
+  /* Keeps white flag edges visible where a flag sits on the panel. */
+  --flag-ring: rgb(255 255 255 / 22%);
 
-  --correct: #508b53;
-  --incorrect: #eb4b48;
-  --previous: #e78f3a;
-  --up: #e78f3a;
-  --down: #b042ff;
+  /* Verdicts. White text is at least 4.5:1 on match and wrong. */
+  --correct: #1a7f3c;
+  --previous: #ffe600;
+  --hatch: #e0c800;
+  --previous-edge: transparent;
+  --incorrect: #363c46;
+  /* The higher/lower band; the arrow cut out of it is 7.7:1. */
+  --band: #b8c0ca;
+
+  --font: "Titillium Web", "Segoe UI", system-ui, sans-serif;
 
   /*
-   * Seven tiles plus their 8px margins must fit the viewport minus a 16px
-   * gutter each side: 7 × (tile + 8) ≤ 100vw − 32px. Capped at the original 55px.
+   * Tile geometry. Seven tiles, their six gaps and the board panel's chrome
+   * (stripe, padding, border; see Board.svelte) must fit the viewport minus
+   * a 16px gutter each side, down to 30px tiles on a 320px phone; desktop
+   * stops at 62px.
    */
-  --tile: clamp(30px, calc((100vw - 32px) / 7 - 8px), 55px);
-  --font: "Titillium Web", "Segoe UI", system-ui, sans-serif;
+  --gap: 3px;
+  --stripe: 4px;
+  --board-chrome: calc(var(--stripe) + 8px + 9px + 2px);
+  --tile: clamp(30px, calc((100vw - 32px - 6 * var(--gap) - var(--board-chrome)) / 7), 62px);
+  --tile-h: var(--tile);
 }
 
-/* The original high-contrast palette, for players who struggle with the defaults. */
+/* Desktop and tablet: slightly landscape tiles so the board doesn't tower. */
+@media (min-width: 560px) {
+  :root {
+    --gap: 4px;
+    --stripe: 5px;
+    --board-chrome: calc(var(--stripe) + 16px + 18px + 2px);
+    --tile-h: min(var(--tile), 56px);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #e1e6ec;
+  --panel: #fff;
+  --code: #e9edf2;
+  --edge: #c3ccd6;
+  --empty-edge: #87929f;
+  --ink: #0e1318;
+  --muted: #4f5a66;
+  --accent: #e01405;
+  --accent-text: #c41004;
+  --btn: #c41004;
+  --hi: #e6ebf1;
+  --clock-bg: #0e1318;
+  --backdrop: rgb(14 19 24 / 45%);
+  --line: rgb(14 19 24 / 7%);
+  --flag-ring: rgb(14 19 24 / 30%);
+
+  --incorrect: #4a5361;
+  /* The pale yellow can't edge itself on white, so it gets an olive line. */
+  --previous-edge: #6f6200;
+}
+
+/*
+ * High contrast: blue match and orange former team, a pair that stays
+ * distinct for red-green and blue-yellow colour blindness, a wrong fill that
+ * clears 3:1 against the panel, and a near-white band.
+ */
 :root.high-contrast {
-  --correct: #88ea09;
-  --incorrect: #e21143;
-  --previous: #f9bd00;
-  --up: #f9bd00;
-  --down: #8a2df0;
+  --correct: #0a66c2;
+  --previous: #ff9f1c;
+  --hatch: #e08600;
+  --incorrect: #606a77;
+  --band: #f2f4f6;
+}
+
+:root.high-contrast[data-theme="light"] {
+  --correct: #0a5cb0;
+  --incorrect: #3a414c;
+  --band: #e9edf2;
 }
 
 *,
@@ -42,30 +117,55 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background-color: var(--bg);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font);
   font-size: 16px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+/* The app's root: header, main and footer, with the footer pushed to the bottom. */
+#app {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-a {
-  color: var(--text);
+/* Speed lines: 1px rules every 10px, faded out away from the page's edges. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(180deg, transparent 0 9px, var(--line) 9px 10px);
+  --fade: linear-gradient(90deg, #000 0, transparent 6%, transparent 94%, #000 100%);
+  mask-image: var(--fade);
 }
 
-p a {
-  color: var(--accent);
+@media (min-width: 560px) {
+  body::before {
+    --fade: linear-gradient(90deg, #000 0, transparent 14%, transparent 86%, #000 100%);
+  }
+}
+
+a {
+  color: var(--accent-text);
   text-decoration: none;
 }
 
-p a:hover {
+a:hover {
   text-decoration: underline;
 }
 
@@ -75,74 +175,194 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--muted);
-  outline-offset: 2px;
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
 }
 
-/* A clue tile. The verdict classes double as the game's vocabulary (see core/clues.ts). */
-.frame {
-  position: relative;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: var(--tile);
-  height: var(--tile);
-  margin: 4px;
-  background-color: var(--bg);
-  outline: 2px solid var(--border);
-  text-align: center;
+/* A caps label: board columns, "Next Stewardle", dialog section names. */
+.caps {
+  margin: 0;
+  font-size: 11px;
   font-weight: 700;
-  font-size: calc(var(--tile) * 0.3);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  transition:
-    background-color 1s,
-    border-radius 1s;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.frame.correct {
-  background-color: var(--correct);
-  border-radius: 18%;
-}
-
-.frame.incorrect {
-  background-color: var(--incorrect);
-  border-radius: 18%;
-}
-
-.frame.previous {
-  background-color: var(--previous);
-  border-radius: 18%;
-}
-
-/* "up": the answer's value is higher, so the tile points up. */
-.frame.up {
-  background-color: var(--up);
-  border-radius: 36% 36% 0 0;
-}
-
-.frame.down {
-  background-color: var(--down);
-  border-radius: 0 0 36% 36%;
+/* A panel: square corners, a 1px edge and the red stripe down its left side. */
+.panel {
+  background: linear-gradient(90deg, var(--accent) 0 var(--stripe), var(--panel) var(--stripe));
+  border: 1px solid var(--edge);
+  padding-left: var(--stripe);
 }
 
 /*
- * Pinned to the tile's edges: a percentage height doesn't resolve against the
- * tile's auto-sized grid row, which let tall logos (Ferrari) spill out.
+ * A clue tile. The verdict classes double as the game's vocabulary (see
+ * core/clues.ts). Each tile sits in a .slot that keeps the empty outline
+ * visible while a revealed tile wipes in over it.
  */
-.frame img {
+.slot {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--tile);
+  height: var(--tile-h);
+  border-radius: 2px;
+}
+
+.slot.reveal {
+  box-shadow: inset 0 0 0 1.5px var(--empty-edge);
+}
+
+.frame {
+  --tile-fs: clamp(10px, calc(var(--tile) * 0.3), 18px);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 2px;
+  overflow: hidden;
+  color: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--empty-edge);
+  font-weight: 700;
+  font-size: var(--tile-fs);
+  line-height: 1;
+  text-align: center;
+}
+
+.frame.code {
+  background: var(--code);
+  color: var(--ink);
+  box-shadow: none;
+  padding-left: clamp(3px, calc(var(--tile) * 0.08), 5px);
+}
+
+/* The driver-code tile's team stripe. */
+.frame.code::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: clamp(3px, calc(var(--tile) * 0.08), 5px);
+  background: var(--team, #8a94a1);
+}
+
+.frame.correct,
+.frame.incorrect,
+.frame.previous,
+.frame.up,
+.frame.down {
+  box-shadow: none;
+}
+
+.frame.correct {
+  background: var(--correct);
+}
+
+.frame.incorrect {
+  background: var(--incorrect);
+}
+
+/* Former team: hatched yellow, so it differs from a match by pattern as well as colour. */
+.frame.previous {
+  --stripe-w: calc(var(--tile-h) / 11);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--previous) 0 var(--stripe-w),
+    var(--hatch) var(--stripe-w) calc(var(--stripe-w) * 2)
+  );
+  box-shadow: inset 0 0 0 1px var(--previous-edge);
+  color: #0e1318;
+}
+
+/*
+ * Higher/lower: the wrong fill with a band over the 40% of the tile on the
+ * answer's side, an arrowhead cut out of it, and the number in the rest.
+ */
+.frame.up {
+  grid-template-rows: 40% 1fr;
+  background: linear-gradient(180deg, var(--band) 0 40%, var(--incorrect) 40% 100%);
+}
+
+.frame.down {
+  grid-template-rows: 1fr 40%;
+  background: linear-gradient(0deg, var(--band) 0 40%, var(--incorrect) 40% 100%);
+}
+
+.frame .arrow {
+  display: block;
+  width: 42%;
+  height: calc(var(--tile-h) * 0.24);
+  fill: var(--incorrect);
+}
+
+.frame.up .arrow {
+  grid-row: 1;
+}
+
+.frame.up > :not(.arrow) {
+  grid-row: 2;
+}
+
+.frame.down .arrow {
+  grid-row: 2;
+}
+
+.frame.down > :not(.arrow) {
+  grid-row: 1;
+}
+
+/* Flags sit inset in the verdict colour, with no keyline. */
+.frame .flag {
+  position: absolute;
+  inset: clamp(3px, calc(var(--tile) * 0.1), 6px);
+  width: calc(100% - 2 * clamp(3px, calc(var(--tile) * 0.1), 6px));
+  height: calc(100% - 2 * clamp(3px, calc(var(--tile) * 0.1), 6px));
+  border-radius: 1px;
+  object-fit: cover;
+}
+
+/*
+ * Logos in full colour, straight on the fill. A soft glow keeps them legible
+ * on every fill: dark for most, light for the darkest marks.
+ */
+.frame .logo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  padding: 5px;
+  padding: calc(var(--tile-h) * 0.13) calc(var(--tile-h) * 0.08);
   object-fit: contain;
+  filter: drop-shadow(0 0 4px rgb(0 0 0 / 50%)) drop-shadow(0 0 1.5px rgb(0 0 0 / 30%));
+}
+
+.frame .logo.light-glow {
+  filter: drop-shadow(0 0 4px rgb(255 255 255 / 32%));
+}
+
+.frame .badge {
+  font-size: calc(var(--tile-fs) * 0.72);
+  letter-spacing: 0.04em;
+}
+
+/* A new row: each tile wipes in from the left, column by column. */
+.slot.reveal .frame {
+  animation: wipe 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--column, 0) * 110ms);
+}
+
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 .splitter {
   width: 100%;
   height: 1px;
-  background-color: var(--border);
+  background-color: var(--edge);
   border: 0;
   margin: 0;
 }
@@ -156,47 +376,58 @@ button {
   white-space: nowrap;
 }
 
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20%,
-  60% {
-    transform: translateX(-10px);
-  }
-  40%,
-  80% {
-    transform: translateX(10px);
-  }
+/* Buttons: square, like on-screen graphics. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px solid var(--empty-edge);
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--ink);
+}
+
+.btn.primary {
+  border: 0;
+  background: var(--btn);
+  color: #fff;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.08);
+}
+
+/* A 44 × 44 icon button (header, dialog close). */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
-}
-
-/* The outlined buttons (Share, Retry). */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  padding: 10px 14px;
-  background-color: var(--bg);
-  border: 2px solid var(--border);
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-
-.btn:hover {
-  border-color: var(--muted);
-}
-
-.btn:active {
-  transform: scale(0.95);
 }

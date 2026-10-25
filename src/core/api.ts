@@ -5,6 +5,7 @@
 import { ageOn, type DayKey } from "./calendar";
 import type { Feedback } from "./clues";
 import { currentTeam, type Driver } from "./roster";
+import { teamColour } from "./teams";
 import type { GameStatus, GuessRejection } from "./session";
 
 /** What the client knows about a driver: everything shown in a guess row. */
@@ -21,6 +22,8 @@ export interface DriverCard {
     readonly badge: string;
     /** Whether logos/<id>.webp exists; if not, the tile shows the badge text. */
     readonly hasLogo: boolean;
+    /** Livery colour (#rrggbb) for the stripe beside the driver's code. */
+    readonly colour: string;
   };
   readonly number: number;
   /** Age on the puzzle day. */
@@ -39,7 +42,13 @@ export function toCard(driver: Driver, day: DayKey, hasLogo: (teamId: string) =>
     code: driver.code,
     nationality: driver.nationality,
     flag: driver.flag,
-    team: { id: team.id, name: team.name, badge: team.badge, hasLogo: hasLogo(team.id) },
+    team: {
+      id: team.id,
+      name: team.name,
+      badge: team.badge,
+      hasLogo: hasLogo(team.id),
+      colour: teamColour(team.id),
+    },
     number: driver.number,
     age: ageOn(driver.dateOfBirth, day),
     firstSeason: driver.firstSeason,

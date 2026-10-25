@@ -2,13 +2,18 @@
   A modal dialog on the native <dialog> element, which gives focus trapping,
   Escape to close and an inert page behind it for free (Safari 15.4+).
   Clicking the dimmed backdrop closes it too, as on the original site.
+  Drawn as a panel with the red stripe, its title beside the Close button.
+  It slides in on opening and back out on closing; the native dialog would
+  vanish at once on close(), so it stays up until the exit animation ends.
 -->
 <script lang="ts">
   import type { Snippet } from "svelte";
   import X from "@lucide/svelte/icons/x";
+  import { prefersReducedMotion } from "svelte/motion";
 
   interface Props {
     open: boolean;
+    /** The dialog's title, shown at its top and used as its accessible name. */
     label: string;
     onclose: () => void;
     children: Snippet;
@@ -17,17 +22,39 @@
   const { open, label, onclose, children }: Props = $props();
   let dialog: HTMLDialogElement | undefined = $state();
   let content: HTMLDivElement | undefined = $state();
+  /** Whether the dialog is on the page: from opening until its exit animation ends. */
+  let shown = $state(false);
+  let closing = $state(false);
 
   $effect(() => {
-    if (!dialog) return;
-    if (open && !dialog.open) {
+    if (open) {
+      shown = true;
+      closing = false;
+    } else if (shown) {
+      if (prefersReducedMotion.current) finishClosing();
+      else closing = true;
+    }
+  });
+
+  $effect(() => {
+    if (open && dialog && !dialog.open) {
       dialog.showModal();
       // showModal() focuses the first button (Close), which WebKit then draws a
       // focus ring around; focus the panel instead so reading starts at the top.
       content?.focus();
     }
-    if (!open && dialog.open) dialog.close();
   });
+
+  function finishClosing(): void {
+    dialog?.close();
+    shown = false;
+    closing = false;
+  }
+
+  function onAnimationEnd(event: AnimationEvent): void {
+    // The backdrop's fade reports here too; the panel's slide is the one to wait for.
+    if (closing && event.target === dialog && event.animationName.endsWith("slide-out")) finishClosing();
+  }
 
   function onBackdropClick(event: MouseEvent): void {
     // Clicks on the ::backdrop are delivered to the <dialog> itself.
@@ -35,69 +62,113 @@
   }
 </script>
 
-{#if open}
+{#if shown}
   <dialog
     bind:this={dialog}
+    class={["panel", closing && "closing"]}
     aria-label={label}
     onclick={onBackdropClick}
+    onanimationend={onAnimationEnd}
     oncancel={(event) => {
       event.preventDefault();
       onclose();
     }}
   >
     <div class="content" bind:this={content} tabindex="-1">
-      <button class="close" type="button" aria-label="Close" onclick={onclose}><X size={22} /></button>
-      {@render children()}
+      <div class="title">
+        <h2>{label}</h2>
+        <button class="icon-btn" type="button" aria-label="Close" onclick={onclose}
+          ><X size={26} aria-hidden="true" /></button
+        >
+      </div>
+      <div class="body">
+        {@render children()}
+      </div>
     </div>
   </dialog>
 {/if}
 
 <style>
   dialog {
-    padding: 0;
-    border: 0;
-    background: var(--bg);
-    color: var(--text);
-    box-shadow: 0 4px 23px 0 rgb(0 0 0 / 20%);
-    width: min(30em, calc(100vw - 32px));
-    max-height: min(90dvh, 44em);
-    animation: fade-in 0.3s ease-out;
+    width: min(500px, calc(100vw - 24px));
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    margin: max(12px, min(60px, 6dvh)) auto auto;
+    padding: 0 0 0 var(--stripe);
+    color: var(--ink);
+    animation: slide-in 200ms ease-out;
   }
 
   dialog::backdrop {
-    background: rgb(0 0 0 / 60%);
-    animation: fade-in 0.3s ease-out;
+    background: var(--backdrop);
+    animation: fade-in 200ms ease-out;
+  }
+
+  dialog.closing {
+    animation: slide-out 140ms ease-out forwards;
+  }
+
+  dialog.closing::backdrop {
+    animation: fade-out 140ms ease-out forwards;
+  }
+
+  /* Phones: just under the header. */
+  @media (max-width: 559px) {
+    dialog {
+      margin-top: min(64px, 8dvh);
+    }
   }
 
   .content {
-    position: relative;
-    padding: 1.6em;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 10px 10px 20px 20px;
   }
 
   .content:focus {
     outline: none;
   }
 
-  .close {
-    position: absolute;
-    top: 1em;
-    right: 1em;
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    background: none;
-    border: 0;
-    cursor: pointer;
-    transition: color 0.2s;
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .close:hover {
-    color: var(--muted);
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .body {
+    padding-right: 10px;
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
 
   @keyframes fade-in {
     from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes slide-out {
+    to {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  @keyframes fade-out {
+    to {
       opacity: 0;
     }
   }

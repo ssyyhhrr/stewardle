@@ -6,13 +6,14 @@
 import type { DriverCard, PuzzleResponse } from "../../core/api";
 import type { DayKey } from "../../core/calendar";
 import { MAX_GUESSES, type GameStatus } from "../../core/session";
-import type { SaveFile, SavedGame, SavedGuess } from "../../core/save";
+import type { SaveFile, SavedGame, SavedGuess, Settings, Theme } from "../../core/save";
 import { shareText } from "../../core/share";
 import { displayedStreak, recordResult, type PlayerStats } from "../../core/stats";
 import { fetchPuzzle, submitGuess } from "./api";
 import { DEFEAT_CALL, randomVictoryCall } from "./phrases";
 import { shareResult, type ShareOutcome } from "./share";
 import { idSet, indexById } from "./collections";
+import { showSettings } from "./display";
 import { loadSave, writeSave } from "./storage";
 
 /** A filled board row: who was guessed and how each clue scored. */
@@ -42,12 +43,19 @@ export class GameController {
   headline = $state<string | null>(null);
   tutorialOpen = $state(false);
   statsOpen = $state(false);
+  settingsOpen = $state(false);
+  /**
+   * Rows from this index on were guessed in this visit and animate in; rows
+   * restored from the save appear already revealed.
+   */
+  revealFrom = $state(0);
 
   /** Server clock minus device clock, measured when the puzzle loaded. */
   private clockOffset = 0;
   private noticeTimer: ReturnType<typeof setTimeout> | undefined;
   private checkingDay = false;
   private retryDelay = RETRY_FIRST_MS;
+  private stopFollowingDevice: () => void = () => undefined;
 
   readonly driversById = $derived(indexById(this.puzzle?.drivers ?? []));
 
@@ -79,7 +87,7 @@ export class GameController {
 
   /** Loads the puzzle and restores today's board; opens the tutorial for newcomers. */
   async start(): Promise<void> {
-    document.documentElement.classList.toggle("high-contrast", this.save.settings.highContrast);
+    this.stopFollowingDevice = showSettings(this.save.settings);
     await this.loadPuzzle();
     if (this.phase === "ready" && !this.save.settings.tutorialSeen) this.tutorialOpen = true;
     document.addEventListener("visibilitychange", () => {
@@ -99,6 +107,7 @@ export class GameController {
     this.phase = "ready";
     if (this.save.game && this.save.game.day !== result.data.day) this.update({ game: null });
     this.headline = this.headlineFor(this.status);
+    this.revealFrom = this.rows.length;
     return true;
   }
 
@@ -167,6 +176,7 @@ export class GameController {
         // The server no longer accepts this game (its signing secret changed),
         // so the saved board can't be continued: start the day afresh and replay the guess.
         this.update({ game: null });
+        this.revealFrom = 0;
         this.say("Your game couldn't be verified, so today's board has been restarted.");
         result = await submitGuess({ token: null, driverId });
       }
@@ -212,10 +222,18 @@ export class GameController {
     return shareResult(this.shareText());
   }
 
-  toggleHighContrast(): void {
-    const highContrast = !this.save.settings.highContrast;
-    document.documentElement.classList.toggle("high-contrast", highContrast);
-    this.update({ settings: { ...this.save.settings, highContrast } });
+  setTheme(theme: Theme): void {
+    this.changeSettings({ theme });
+  }
+
+  setHighContrast(highContrast: boolean): void {
+    this.changeSettings({ highContrast });
+  }
+
+  private changeSettings(changes: Partial<Settings>): void {
+    this.update({ settings: { ...this.save.settings, ...changes } });
+    this.stopFollowingDevice();
+    this.stopFollowingDevice = showSettings(this.save.settings);
   }
 
   closeTutorial(): void {

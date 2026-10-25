@@ -70,6 +70,53 @@ const RULES: Readonly<Record<string, readonly BrandRule[]>> = {
   williams: [{ brand: brand("williams", "Williams", "WIL") }],
 };
 
+/**
+ * Each brand's livery colour, for the stripe beside its drivers on the board
+ * and in the suggestion list. Keyed by brand id; a team that isn't listed
+ * gets FALLBACK_COLOUR. The stripe is decorative (the logo names the team).
+ */
+const COLOURS: Readonly<Record<string, string>> = {
+  alfa: "#9b0000",
+  alpha: "#2b4562",
+  alpine: "#0093cc",
+  aston: "#00665e",
+  audi: "#bb0a30",
+  bar: "#c8ccd0",
+  benetton: "#00a651",
+  bmw_sauber: "#0066b1",
+  brawn: "#c4ff3d",
+  cadillac: "#9ea3a8",
+  caterham: "#00573f",
+  ferrari: "#e8002d",
+  force_india: "#f596c8",
+  haas: "#b6babd",
+  honda: "#e60012",
+  hrt: "#a6904f",
+  kick: "#52e252",
+  lotus: "#c9a748",
+  marussia: "#c8102e",
+  mclaren: "#ff8000",
+  mercedes: "#27f4d2",
+  minardi: "#f9d71c",
+  racing_point: "#f596c8",
+  rb: "#6692ff",
+  red: "#3671c6",
+  renault: "#fff500",
+  sauber: "#006eff",
+  spyker: "#ff6600",
+  toro: "#1e41ff",
+  toyota: "#eb0a1e",
+  williams: "#64c4ff",
+};
+
+/** The neutral stripe for a team with no colour of its own. */
+export const FALLBACK_COLOUR = "#8a94a1";
+
+/** A brand's livery colour, or the neutral fallback for a team the table doesn't know. */
+export function teamColour(brandId: string): string {
+  return COLOURS[brandId] ?? FALLBACK_COLOUR;
+}
+
 /** Ids of every brand in the table; logos are optional, but must use one of these names. */
 export function knownBrandIds(): string[] {
   return [...new Set(Object.values(RULES).flatMap((rules) => rules.map((rule) => rule.brand.id)))].sort();

@@ -3,22 +3,23 @@
  *
  *     Stewardle 1558 3/6
  *
- *     🟥🟧⬇️⬇️⬆️⬇️
- *     🟥🟩⬆️⬆️🟩⬇️
+ *     ⬛🟨⬇️⬇️⬆️⬇️
+ *     ⬛🟩⬆️⬆️🟩⬇️
  *     🟩🟩🟩🟩🟩🟩
  *
  *     https://stewardle.com
  *
  * One line per guess, one square per clue column (the driver-code column is
- * left out). A loss shows X/6, as in Wordle.
+ * left out), in the board's colours: green for a match, yellow for a former
+ * team, black for a miss. A loss shows X/6, as in Wordle.
  */
 import { verdictsInOrder, type Feedback, type Verdict } from "./clues";
 import { MAX_GUESSES } from "./session";
 
 const EMOJI: Readonly<Record<Verdict, string>> = {
   correct: "🟩",
-  incorrect: "🟥",
-  previous: "🟧",
+  incorrect: "⬛",
+  previous: "🟨",
   up: "⬆️",
   down: "⬇️",
 };

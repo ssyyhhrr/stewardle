@@ -32,7 +32,11 @@ export function loadSave(): SaveFile {
 
   const migrated = migrateLegacyStorage((key) => store.getItem(key) ?? undefined, dayKeyOf(Date.now()));
   if (!migrated) return EMPTY_SAVE;
-  const save: SaveFile = { ...EMPTY_SAVE, stats: migrated.stats, settings: migrated.settings };
+  const save: SaveFile = {
+    ...EMPTY_SAVE,
+    stats: migrated.stats,
+    settings: { ...EMPTY_SAVE.settings, ...migrated.settings },
+  };
   writeSave(save);
   for (const key of LEGACY_KEYS) store.removeItem(key);
   return save;

@@ -23,6 +23,12 @@ describe("toCard", () => {
       team: { id: "ferrari", name: "Ferrari", hasLogo: true },
     });
     const bottas = toCard(named(roster, "Valtteri Bottas"), day("2026-10-16"), () => false);
-    expect(bottas.team).toEqual({ id: "cadillac", name: "Cadillac", badge: "CAD", hasLogo: false });
+    expect(bottas.team).toEqual({
+      id: "cadillac",
+      name: "Cadillac",
+      badge: "CAD",
+      hasLogo: false,
+      colour: "#9ea3a8",
+    });
   });
 });

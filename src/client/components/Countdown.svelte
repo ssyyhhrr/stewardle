@@ -1,6 +1,7 @@
 <!--
-  Time to the next puzzle as HH:MM:SS:mmm, redrawn once per animation frame
-  (the original redrew every millisecond). Calls `onzero` when it runs out.
+  Time to the next puzzle as HH:MM:SS:mmm, styled as a broadcast session
+  clock and redrawn once per animation frame (the original redrew every
+  millisecond). Calls `onzero` when it runs out.
 -->
 <script lang="ts">
   interface Props {
@@ -32,15 +33,47 @@
   });
 
   const pad = (value: number, width = 2): string => String(value).padStart(width, "0");
-  const text = $derived(
-    `${pad(Math.floor(remaining / 3_600_000))}:${pad(Math.floor(remaining / 60_000) % 60)}:${pad(Math.floor(remaining / 1000) % 60)}:${pad(remaining % 1000, 3)}`,
-  );
+  const parts = $derived([
+    pad(Math.floor(remaining / 3_600_000)),
+    pad(Math.floor(remaining / 60_000) % 60),
+    pad(Math.floor(remaining / 1000) % 60),
+  ]);
+  const millis = $derived(pad(remaining % 1000, 3));
 </script>
 
-<span class="countdown" role="timer" aria-label="Time until the next Stewardle">{text}</span>
+<span class="clock" role="timer" aria-label="Time until the next Stewardle"
+  >{parts[0]}<span class="sep">:</span>{parts[1]}<span class="sep">:</span>{parts[2]}<span class="sep">:</span
+  ><span class="ms">{millis}</span></span
+>
 
 <style>
-  .countdown {
+  /* Near-black with the red stripe in both themes, like an on-screen session clock. */
+  .clock {
+    display: block;
+    padding: 6px 14px 6px calc(5px + 14px);
+    border: 1px solid var(--edge);
+    background: linear-gradient(90deg, var(--accent) 0 5px, var(--clock-bg) 5px);
+    color: #f2f4f6;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
+  }
+
+  .sep {
+    color: #7d8794;
+  }
+
+  .ms {
+    color: #b8c0ca;
+  }
+
+  @media (max-width: 559px) {
+    .clock {
+      padding: 7px 12px 7px calc(4px + 12px);
+      background: linear-gradient(90deg, var(--accent) 0 4px, var(--clock-bg) 4px);
+      font-size: 28px;
+    }
   }
 </style>

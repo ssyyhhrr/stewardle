@@ -1,0 +1,230 @@
+{
+  "$comment": "Team logos: where each comes from and how it is cut out. Maintained by `npm run logos`; see scripts/logos.ts.",
+  "logos": {
+    "alfa": {
+      "page": "Alfa Romeo in Formula One",
+      "infobox": "File:Alfa Romeo F1 Team Stake Logo.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "alpha": {
+      "page": "Scuderia AlphaTauri",
+      "infobox": "File:Scuderia Alpha-Tauri.svg",
+      "glow": "light",
+      "locked": true
+    },
+    "alpine": {
+      "page": "Alpine F1 Team",
+      "infobox": "File:BWT Alpine F1 Team Logo.png",
+      "glow": "light",
+      "locked": true
+    },
+    "aston": {
+      "page": "Aston Martin in Formula One",
+      "infobox": "File:Aston Martin Aramco 2024 logo.png",
+      "glow": "dark",
+      "locked": true
+    },
+    "audi": {
+      "page": "Audi in Formula One",
+      "infobox": "File:Audif1.com logo17 (cropped).svg",
+      "file": "File:Audi logo detail.svg",
+      "crop": {
+        "axis": "y",
+        "run": 0
+      },
+      "glow": "dark",
+      "sha1": "428467ce47dd30a648761ca2b0d13a84000b1a5f"
+    },
+    "bar": {
+      "page": "British American Racing",
+      "infobox": "File:British american racing logo.png",
+      "file": "File:British american racing logo.png",
+      "crop": {
+        "axis": "y",
+        "run": 0
+      },
+      "glow": "dark",
+      "sha1": "7c420c10d10b39c0d6926eadd24646d8ef595a5e"
+    },
+    "benetton": {
+      "page": "Benetton Formula",
+      "infobox": "File:Benetton Formula logo.jpg",
+      "file": "File:Benetton Formula logo.jpg",
+      "glow": "dark",
+      "sha1": "3bffbfb91f494c19262ca364ede9222136ae4a77"
+    },
+    "bmw_sauber": {
+      "page": "BMW Sauber",
+      "infobox": "File:BMW.svg",
+      "file": "File:BMW.svg",
+      "glow": "dark",
+      "sha1": "f022ef6e485b2ef1729b003c3b22a5de7a7d5d39"
+    },
+    "brawn": {
+      "page": "Brawn GP",
+      "infobox": "File:Brawn GP logo.svg",
+      "file": "File:Brawn GP logo.svg",
+      "glow": "light",
+      "sha1": "083d05e3988fe4b1adfaae7b96163d7567695a0c"
+    },
+    "cadillac": {
+      "page": "Cadillac Formula 1 Team",
+      "infobox": "File:Cadillac Formula 1 Team Logo (2025).svg",
+      "file": "File:Cadillac Formula 1 Team Logo (2025).svg",
+      "crop": {
+        "axis": "y",
+        "run": 0
+      },
+      "glow": "dark",
+      "sha1": "d4a1cbac805c6a64ced2ec470c3868ef7d5f8ee0"
+    },
+    "caterham": {
+      "page": "Caterham F1",
+      "infobox": "File:Caterham F1 Team logo.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "ferrari": {
+      "page": "Scuderia Ferrari",
+      "infobox": "File:Scuderia Ferrari HP logo 24.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "force_india": {
+      "page": "Force India",
+      "infobox": "File:Force India.svg",
+      "file": "File:Force India.svg",
+      "glow": "dark",
+      "sha1": "6db9fe63c0377072423076d026b916c3c5b35c71",
+      "crop": {
+        "box": [0, 0, 0.335, 1]
+      }
+    },
+    "haas": {
+      "page": "Haas F1 Team",
+      "infobox": "File:TGR Haas F1 Team Logo (2026).svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "honda": {
+      "page": "Honda Racing F1",
+      "infobox": "File:Honda new h mark.svg",
+      "file": "File:Honda new h mark.svg",
+      "crop": {
+        "axis": "y",
+        "run": 0
+      },
+      "glow": "light",
+      "sha1": "f3221ff59092b6dd9e90f4cd0e915d53ed10b563"
+    },
+    "hrt": {
+      "page": "HRT Formula 1 Team",
+      "infobox": "File:HRT F1 TEAM 2012.svg",
+      "file": "File:HRT F1 TEAM 2012.svg",
+      "crop": {
+        "axis": "y",
+        "run": 0
+      },
+      "glow": "dark",
+      "sha1": "e1a1b5696fbe6abcf379a9d88599edcf6aefc1eb"
+    },
+    "kick": {
+      "page": "Sauber Motorsport",
+      "infobox": "File:Sauber Motorsport SVG logo (2023).svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "lotus": {
+      "page": "Lotus F1",
+      "infobox": "File:Lotus F1 Team logo.png",
+      "glow": "dark",
+      "locked": true
+    },
+    "marussia": {
+      "page": "Marussia F1",
+      "infobox": "File:Marussia F1.png",
+      "glow": "dark",
+      "locked": true
+    },
+    "mclaren": {
+      "page": "McLaren",
+      "infobox": "File:McLarenF1Team.png",
+      "glow": "dark",
+      "locked": true
+    },
+    "mercedes": {
+      "page": "Mercedes-Benz in Formula One",
+      "infobox": "File:Mercedes-AMG Petronas F1 Team logo (2026).svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "minardi": {
+      "page": "Minardi",
+      "infobox": "File:Minardi F1 Team.svg",
+      "file": "File:Minardi F1 Team.svg",
+      "glow": "dark",
+      "sha1": "6658f34bfd34a23fb598c93455031b565956ab1d"
+    },
+    "racing_point": {
+      "page": "Racing Point F1 Team",
+      "infobox": "File:BWT Racing Point Logo.svg",
+      "file": "File:Racing Point.svg",
+      "glow": "dark",
+      "sha1": "c6a3c33851fc7589bae7d6cc1917a5cfc097da9e"
+    },
+    "rb": {
+      "page": "Racing Bulls",
+      "infobox": "File:VCARB F1 logo.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "red": {
+      "page": "Red Bull Racing",
+      "infobox": "File:Red Bull Racing Logo 2026.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "renault": {
+      "page": "Renault in Formula One",
+      "infobox": "File:Renault F1 Team logo 2019.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "sauber": {
+      "page": "Sauber Motorsport",
+      "infobox": "File:Sauber Motorsport SVG logo (2023).svg",
+      "glow": "light",
+      "locked": true
+    },
+    "spyker": {
+      "page": "Spyker F1",
+      "infobox": "File:Spyker F1 Team logo.png",
+      "file": "File:Logo Spyker.svg",
+      "glow": "light",
+      "sha1": "33c4fc11e979c9bcc96dc1ec8d061ec0eee5a950"
+    },
+    "toro": {
+      "page": "Scuderia Toro Rosso",
+      "infobox": "File:Scuderia Toro Rosso logo.svg",
+      "glow": "dark",
+      "locked": true
+    },
+    "toyota": {
+      "page": "Toyota Racing (Formula One team)",
+      "infobox": "File:Panasonic Toyota Racing logo.svg",
+      "file": "File:Panasonic Toyota Racing logo.svg",
+      "crop": {
+        "box": [0, 0, 0.215, 1]
+      },
+      "glow": "light",
+      "sha1": "14a35473b8f91afaf23f0fa4b1ea4cdbd410f15b"
+    },
+    "williams": {
+      "page": "Williams Racing",
+      "infobox": "File:Atlassian Williams F1 Team logo.svg",
+      "glow": "dark",
+      "locked": true
+    }
+  }
+}

@@ -132,8 +132,8 @@ export function expectedStates(guessName: string, answerName: string, day = new 
 
 const EMOJI: Record<TileState, string> = {
   correct: "🟩",
-  incorrect: "🟥",
-  previous: "🟧",
+  incorrect: "⬛",
+  previous: "🟨",
   up: "⬆️",
   down: "⬇️",
 };

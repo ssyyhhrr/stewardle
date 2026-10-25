@@ -116,6 +116,7 @@ describe("GET /api/puzzle", () => {
     expect(puzzle.drivers.find((d) => d.id === "leclerc")?.team).toMatchObject({
       id: "ferrari",
       hasLogo: true,
+      colour: "#e8002d",
     });
   });
 

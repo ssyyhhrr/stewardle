@@ -24,6 +24,8 @@
     "fixtures": "tsx scripts/generate-fixtures.ts",
     "fixtures:legacy-storage": "tsx scripts/generate-legacy-storage.ts",
     "icons": "tsx scripts/generate-icons.ts",
+    "og-image": "tsx scripts/generate-og-image.ts",
+    "logos": "tsx scripts/logos.ts",
     "screenshot": "tsx scripts/generate-screenshot.ts",
     "fake-jolpica": "tsx scripts/fake-jolpica.ts"
   },
@@ -32,6 +34,7 @@
     "hono": "4.13.9"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
     "@fontsource/titillium-web": "5.3.0",
     "@lucide/svelte": "1.48.0",

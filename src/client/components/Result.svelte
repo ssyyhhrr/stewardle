@@ -1,12 +1,13 @@
 <!--
-  Shown in place of the guess box once the day's game is over: the headline,
-  the answer, a Share button and the countdown to the next puzzle.
+  Shown in place of the guess box once the day's game is over: the radio-call
+  headline, the answer, Share, and the countdown to the next puzzle. Share
+  and the clock form one block of equal width, set apart from the headline.
 -->
 <script lang="ts">
-  import Share2 from "@lucide/svelte/icons/share-2";
   import type { DriverCard } from "../../core/api";
   import type { ShareOutcome } from "../lib/share";
   import Countdown from "./Countdown.svelte";
+  import ShareButton from "./ShareButton.svelte";
 
   interface Props {
     headline: string;
@@ -18,74 +19,80 @@
   }
 
   const { headline, answer, nextPuzzleAt, now, onshare, onnextday }: Props = $props();
-  let confirmation = $state("");
-
-  async function share(): Promise<void> {
-    const outcome = await onshare();
-    confirmation =
-      outcome === "copied"
-        ? "Copied to clipboard!"
-        : outcome === "failed"
-          ? "Couldn't share. Try again?"
-          : "";
-  }
 </script>
 
 <section class="result" aria-live="polite">
-  <h2>{headline}</h2>
-  {#if answer}
-    <p class="reveal">The driver was <strong>{answer.firstName} {answer.lastName}</strong>!</p>
-  {/if}
-  <button class="btn" type="button" onclick={share}><Share2 size={18} aria-hidden="true" /> Share</button>
-  <p class="confirmation" role="status">{confirmation}</p>
-  <h3>Next Stewardle</h3>
-  <p class="next"><Countdown target={nextPuzzleAt} {now} onzero={onnextday} /></p>
+  <div class="reveal">
+    <h2>{headline}</h2>
+    {#if answer}
+      <p>The driver was <strong>{answer.firstName} {answer.lastName}</strong>!</p>
+    {/if}
+  </div>
+  <div class="actions">
+    <ShareButton {onshare} fill />
+    <div class="next">
+      <h3 class="caps">Next Stewardle</h3>
+      <Countdown target={nextPuzzleAt} {now} onzero={onnextday} />
+    </div>
+  </div>
 </section>
 
 <style>
   .result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     text-align: center;
-    padding-bottom: 1.5em;
+  }
+
+  .reveal,
+  .next {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* As wide as the clock (or the longest confirmation), with Share stretched to match. */
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 280px;
+  }
+
+  .next :global(.clock) {
+    align-self: stretch;
+    text-align: center;
   }
 
   h2 {
-    font-size: 2em;
-    font-weight: 900;
     margin: 0;
-  }
-
-  h3 {
-    font-size: 1.75em;
-    font-weight: 900;
-    margin: 0.6em 0 0;
-  }
-
-  .reveal {
-    font-size: 1.25em;
-    margin: 0.2em 0 0.8em;
-  }
-
-  .reveal strong {
-    font-size: 1.2em;
-  }
-
-  .next {
-    font-size: 1.5em;
+    font-size: 32px;
     font-weight: 700;
+    font-style: italic;
+    line-height: 1.05;
+  }
+
+  p {
     margin: 0;
+    font-size: 17px;
   }
 
-  .confirmation {
-    min-height: 1.5em;
-    margin: 0.4em 0 0;
+  strong {
+    font-weight: 700;
   }
 
-  @media (max-width: 450px) {
-    h2 {
-      font-size: 1.5em;
+  @media (max-width: 559px) {
+    .result {
+      gap: 16px;
     }
-    h3 {
-      font-size: 1.35em;
+    .actions {
+      gap: 18px;
+    }
+    h2 {
+      font-size: 30px;
     }
   }
 </style>

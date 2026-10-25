@@ -1,13 +1,14 @@
 <!--
   Statistics: games played, won and lost, the streak, and how many guesses
-  each win took ("Debrief"). Once today's game is over it also offers Share.
+  each win took ("Debrief"). Once today's game is over it also shows the
+  share grid ("Score") and offers Share.
 -->
 <script lang="ts">
-  import Share2 from "@lucide/svelte/icons/share-2";
   import type { PlayerStats } from "../../core/stats";
   import type { ShareOutcome } from "../lib/share";
   import CountUp from "./CountUp.svelte";
   import Dialog from "./Dialog.svelte";
+  import ShareButton from "./ShareButton.svelte";
 
   interface Props {
     open: boolean;
@@ -22,114 +23,161 @@
 
   const { open, stats, streak, todaysGuesses, shareText, onshare, onclose }: Props = $props();
   const highest = $derived(Math.max(1, ...stats.distribution));
-  let confirmation = $state("");
-
-  async function share(): Promise<void> {
-    const outcome = await onshare();
-    confirmation =
-      outcome === "copied"
-        ? "Copied to clipboard!"
-        : outcome === "failed"
-          ? "Couldn't share. Try again?"
-          : "";
-  }
+  const figures = $derived([
+    { label: "played", value: stats.played },
+    { label: "won", value: stats.won },
+    { label: "lost", value: stats.lost },
+    { label: "streak", value: streak },
+    { label: "max streak", value: stats.maxStreak },
+  ]);
+  // The share text without its blank lines and closing link: the header and the grid.
+  const scoreLines = $derived(
+    shareText
+      ?.split("\n")
+      .filter((line) => line !== "")
+      .slice(0, -1) ?? [],
+  );
 </script>
 
 <Dialog {open} label="Statistics" {onclose}>
-  <h2>Statistics</h2>
-  <div class="numbers">
-    <p><b><CountUp value={stats.played} /></b> played</p>
-    <p><b><CountUp value={stats.won} /></b> won</p>
-    <p><b><CountUp value={stats.lost} /></b> lost</p>
-    <p><b><CountUp value={streak} /></b> streak</p>
-    <p><b><CountUp value={stats.maxStreak} /></b> max streak</p>
-  </div>
-  <hr class="splitter" />
-  <h2>Debrief</h2>
-  <ol class="distribution" aria-label="Wins by number of guesses">
-    {#each stats.distribution as count, i (i)}
-      <li>
-        <b>{i + 1}</b>
-        <div
-          class="bar"
-          class:today={todaysGuesses === i + 1}
-          class:empty={count === 0}
-          style:width={`${String(Math.max(8, (count / highest) * 100))}%`}
-        >
-          {count}
-        </div>
-      </li>
-    {/each}
-  </ol>
-  {#if shareText}
+  <div class="stats">
+    <div class="figures">
+      {#each figures as { label, value } (label)}
+        <p><b><CountUp {value} /></b> <span class="caps">{label}</span></p>
+      {/each}
+    </div>
     <hr class="splitter" />
-    <h2>Score</h2>
-    <pre class="score">{shareText}</pre>
-    <button class="btn" type="button" onclick={share}><Share2 size={18} aria-hidden="true" /> Share</button>
-    <p class="confirmation" role="status">{confirmation}</p>
-  {/if}
+    <h3>Debrief</h3>
+    <ol class="distribution" aria-label="Wins by number of guesses">
+      {#each stats.distribution as count, i (i)}
+        <li>
+          <b>{i + 1}</b>
+          <div class="track">
+            <div
+              class="bar"
+              class:today={todaysGuesses === i + 1}
+              style:width={`${String(Math.max(8, (count / highest) * 100))}%`}
+            >
+              {count}
+            </div>
+          </div>
+        </li>
+      {/each}
+    </ol>
+    {#if shareText}
+      <hr class="splitter" />
+      <h3>Score</h3>
+      <div class="score">
+        <p class="grid">
+          {#each scoreLines as line, i (i)}<span>{line}</span>{/each}
+        </p>
+        <ShareButton {onshare} />
+      </div>
+    {/if}
+  </div>
 </Dialog>
 
 <style>
-  h2 {
-    font-size: 1.1em;
-    margin: 0 0 0.6em;
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .numbers p {
-    margin: 0.35em 0;
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
   }
 
-  .numbers b,
-  .distribution b {
-    display: inline-block;
-    min-width: 1.4em;
-    margin-right: 0.4em;
-    font-variant-numeric: tabular-nums;
+  .figures p {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    text-align: center;
   }
 
-  .splitter {
-    margin: 1em 0;
+  .figures b {
+    font-size: 32px;
+    line-height: 1;
+  }
+
+  .figures .caps {
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
   }
 
   .distribution {
-    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
     margin: 0;
     padding: 0;
+    list-style: none;
   }
 
   .distribution li {
-    display: flex;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 10px;
     align-items: center;
-    gap: 0.5em;
-    margin-bottom: 5px;
+    font-size: 15px;
+  }
+
+  .track {
+    display: flex;
   }
 
   .bar {
-    min-width: 1.6em;
-    padding: 1px 6px;
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 30px;
+    height: 26px;
+    padding: 0 10px;
     font-weight: 700;
-    background-color: var(--border);
-    font-variant-numeric: tabular-nums;
+    color: #fff;
+    background: var(--incorrect);
   }
 
   .bar.today {
-    background-color: var(--correct);
-  }
-
-  .bar.empty {
-    background-color: transparent;
+    background: var(--correct);
   }
 
   .score {
-    font-family: inherit;
-    white-space: pre-wrap;
-    margin: 0 0 1em;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
   }
 
-  .confirmation {
-    min-height: 1.5em;
-    margin: 0.4em 0 0;
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 559px) {
+    .figures b {
+      font-size: 26px;
+    }
+    .bar {
+      height: 24px;
+    }
   }
 </style>

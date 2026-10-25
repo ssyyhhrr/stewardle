@@ -72,19 +72,21 @@ export class Game {
     await this.page.getByRole("button", { name: label }).click();
   }
 
-  /** Types into the guess box and returns the suggestion texts shown. */
+  /** Types into the guess box and returns the driver names suggested. */
   async suggest(text: string): Promise<string[]> {
     await this.input.fill(text);
-    return (await this.suggestions.allInnerTexts()).map((s) => s.trim());
+    return (await this.suggestions.locator(".name").allInnerTexts()).map((s) => s.trim());
   }
 
-  /** Types a name, submits with Enter and waits for the row to be scored. */
+  /** Types a name, submits with Enter and waits for the row to be scored and revealed. */
   async guess(name: string): Promise<void> {
     const filled = await this.filledRowCount();
     await this.input.fill(name);
     await expect(this.suggestions.first()).toBeVisible();
     await this.input.press("Enter");
     await expect.poll(() => this.scoredRowCount(), { timeout: 10_000 }).toBe(filled + 1);
+    // A new row is busy while its tiles wipe in and its numbers count up.
+    await expect(this.rows.and(this.page.locator("[aria-busy]"))).toHaveCount(0);
   }
 
   /** Rows that show a guessed driver. */
@@ -120,7 +122,7 @@ export class Game {
 
   /** The end-of-game headline ("How About That?!", "Bwoah.", …). */
   headline(): Locator {
-    return this.page.locator("h2").first();
+    return this.page.locator(".result h2");
   }
 
   /** The driver named in "The driver was X!", once the game is over. */
@@ -184,8 +186,30 @@ export class Game {
     await this.press("How to play");
   }
 
+  get settingsDialog(): Locator {
+    return this.page.getByRole("dialog", { name: "Settings" });
+  }
+
+  /** Opens Settings, applies `change` to the dialog, then closes it again. */
+  async changeSettings(change: (dialog: Locator) => Promise<void>): Promise<void> {
+    await this.press("Settings");
+    await expect.poll(() => this.effectiveOpacity(this.settingsDialog)).toBe(1);
+    await change(this.settingsDialog);
+    await this.settingsDialog.getByRole("button", { name: "Close" }).click();
+    await expect(this.settingsDialog).toHaveCount(0);
+  }
+
   async toggleHighContrast(): Promise<void> {
-    await this.press("High contrast");
+    await this.changeSettings((dialog) => dialog.getByRole("switch", { name: "High contrast" }).click());
+  }
+
+  async chooseTheme(theme: "System" | "Light" | "Dark"): Promise<void> {
+    await this.changeSettings((dialog) => dialog.getByRole("radio", { name: theme }).check());
+  }
+
+  /** The theme the page is showing ("light" or "dark"). */
+  async shownTheme(): Promise<string | undefined> {
+    return (await this.page.locator("html").getAttribute("data-theme")) ?? undefined;
   }
 
   get statsDialog(): Locator {

@@ -1,8 +1,9 @@
 /**
  * Service worker: makes Stewardle installable and quick to reopen.
  *
- * - Pages: network first, so a deploy shows up at once; the cached copy is
- *   only used offline (the page then explains it can't load the puzzle).
+ * - Pages and /theme.js: network first, so a deploy shows up at once; the
+ *   cached copy is only used offline (the page then explains it can't load
+ *   the puzzle).
  * - /assets/* (fingerprinted by Vite), fonts, flags, logos, icons: cache
  *   first, since they never change under the same URL (flags/logos rarely).
  * - /api/*: never cached. The puzzle must be today's and guesses must reach
@@ -10,8 +11,8 @@
  *
  * Bump CACHE when the caching rules change; old caches are deleted on activate.
  */
-const CACHE = "stewardle-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png"];
+const CACHE = "stewardle-v2";
+const SHELL = ["/", "/theme.js", "/manifest.webmanifest", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
@@ -53,7 +54,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/") || url.pathname === "/healthz") return;
-  if (event.request.mode === "navigate") {
+  // theme.js isn't fingerprinted, so it is refreshed like the page itself.
+  if (event.request.mode === "navigate" || url.pathname === "/theme.js") {
     event.respondWith(networkFirst(event.request));
   } else if (/^\/(assets|flags|logos|icons)\//.test(url.pathname)) {
     event.respondWith(cacheFirst(event.request));

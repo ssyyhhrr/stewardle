@@ -1,9 +1,12 @@
 /** Client entry point: loads fonts and global styles, then mounts the app. */
 import "@fontsource/titillium-web/400.css";
+import "@fontsource/titillium-web/400-italic.css";
+import "@fontsource/titillium-web/600.css";
+import "@fontsource/titillium-web/600-italic.css";
 import "@fontsource/titillium-web/700.css";
+import "@fontsource/titillium-web/700-italic.css";
 import "@fontsource/titillium-web/900.css";
 import "./styles/global.css";
-import "./styles/pattern.css";
 import { mount } from "svelte";
 import App from "./App.svelte";
 

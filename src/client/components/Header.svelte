@@ -1,106 +1,85 @@
-<!-- The title bar: the name, and buttons for statistics, high contrast and help. -->
+<!-- The title bar: the wordmark, and buttons for statistics, settings and help. -->
 <script lang="ts">
   import ChartNoAxesColumn from "@lucide/svelte/icons/chart-no-axes-column";
-  import Info from "@lucide/svelte/icons/info";
-  import Palette from "@lucide/svelte/icons/palette";
+  import CircleQuestionMark from "@lucide/svelte/icons/circle-question-mark";
+  import Settings2 from "@lucide/svelte/icons/settings-2";
+  import Wordmark from "./Wordmark.svelte";
 
   interface Props {
-    highContrast: boolean;
     onstats: () => void;
-    oncontrast: () => void;
+    onsettings: () => void;
     onhelp: () => void;
   }
 
-  const { highContrast, onstats, oncontrast, onhelp }: Props = $props();
+  const { onstats, onsettings, onhelp }: Props = $props();
 </script>
 
 <header>
   <div class="spacer"></div>
-  <h1>Stewardle</h1>
+  <h1><Wordmark /></h1>
   <nav aria-label="Game menu">
-    <button type="button" aria-label="Statistics" onclick={onstats}><ChartNoAxesColumn /></button>
-    <button type="button" aria-label="High contrast" aria-pressed={highContrast} onclick={oncontrast}
-      ><Palette /></button
+    <button class="icon-btn" type="button" aria-label="Statistics" onclick={onstats}
+      ><ChartNoAxesColumn aria-hidden="true" /></button
     >
-    <button type="button" aria-label="How to play" onclick={onhelp}><Info /></button>
+    <button class="icon-btn" type="button" aria-label="Settings" onclick={onsettings}
+      ><Settings2 aria-hidden="true" /></button
+    >
+    <button class="icon-btn" type="button" aria-label="How to play" onclick={onhelp}
+      ><CircleQuestionMark aria-hidden="true" /></button
+    >
   </nav>
 </header>
-<hr class="splitter" />
 
 <style>
   header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 0 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--edge);
   }
 
   h1 {
-    flex: 1;
-    margin: 0.3em 0;
-    font-size: 4em;
-    font-weight: 900;
-    text-transform: uppercase;
-    text-align: center;
-    letter-spacing: 0.02em;
-  }
-
-  .spacer,
-  nav {
-    flex: 1;
+    margin: 0;
+    font-size: 38px;
+    line-height: 1;
   }
 
   nav {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 2px;
   }
 
-  button {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    background: none;
-    border: 0;
-    cursor: pointer;
-    transition: color 0.2s;
+  nav :global(svg) {
+    width: 26px;
+    height: 26px;
   }
 
-  button :global(svg) {
-    width: 28px;
-    height: 28px;
-  }
-
-  button:hover {
-    color: var(--muted);
-  }
-
+  /* Phones and narrow windows: the wordmark moves left. */
   @media (max-width: 820px) {
-    h1 {
-      font-size: 2.5em;
-      text-align: left;
+    header {
+      grid-template-columns: 1fr auto;
+      padding: 8px 8px 8px 16px;
     }
     .spacer {
       display: none;
     }
+    h1 {
+      font-size: 26px;
+    }
     nav {
-      flex: 0 0 auto;
-      gap: 4px;
+      gap: 0;
+    }
+    nav :global(svg) {
+      width: 22px;
+      height: 22px;
     }
   }
 
-  @media (max-width: 450px) {
+  @media (max-width: 340px) {
     h1 {
-      font-size: 1.9em;
-    }
-    button {
-      width: 38px;
-      height: 38px;
-    }
-    button :global(svg) {
-      width: 22px;
-      height: 22px;
+      font-size: 22px;
     }
   }
 </style>

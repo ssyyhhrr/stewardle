@@ -52,10 +52,10 @@
 Stewardle is a daily guessing game for Formula 1 fans. Every day at midnight UTC a new driver is picked from everyone with a permanent car number, and you have six guesses to find them. Each guess is scored on six clues:
 
 - **Flag:** green for the same nationality.
-- **Team:** green for the same current team, orange if the answer used to drive for your guess's team.
+- **Team:** green for the same current team, hatched yellow if the answer used to drive for your guess's team.
 - **Car number, age, first year and race wins:** green if equal, otherwise an arrow pointing towards the answer.
 
-Win to keep your streak, then share the emoji grid. The game works on phones and desktops, can be installed as an app, and keeps your statistics in the browser. The answer stays on the server until the game is over.
+Win to keep your streak, then share the emoji grid. The game works on phones and desktops, can be installed as an app, and keeps your statistics in the browser. It has light and dark themes (following your device unless you pick one) and a high-contrast mode in Settings. The answer stays on the server until the game is over.
 
 ---
 
@@ -120,7 +120,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-`npm run dev` starts the game at http://localhost:5173, and `npm test` runs every check (format, lint, typecheck, unit tests, build and the browser tests, which need `npx playwright install --with-deps chromium webkit` once). The tests replay recorded Jolpica responses; `npm run fixtures` re-records them and `npm run screenshot` redraws the picture above.
+`npm run dev` starts the game at http://localhost:5173, and `npm test` runs every check (format, lint, typecheck, unit tests, build and the browser tests, which need `npx playwright install --with-deps chromium webkit` once). The tests replay recorded Jolpica responses; `npm run fixtures` re-records them and `npm run screenshot` redraws the picture above. `npm run icons` and `npm run og-image` redraw the app icons and the link preview, and `npm run logos` rebuilds team logos from the sources listed in `src/core/logos.json` (a weekly workflow opens an issue when a new team needs one or a logo changes). Design choices are recorded in `docs/decisions.md`.
 
 ---
 
@@ -136,6 +136,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - Flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT, licence in `src/client/public/flags/`).
 - Icons from [Lucide](https://lucide.dev) (ISC).
 - Type is [Titillium Web](https://fonts.google.com/specimen/Titillium+Web) (SIL Open Font License).
+- Team logos come from Wikipedia and Wikimedia Commons; `src/core/logos.json` names each source file. The Audi rings, Racing Point roundel and Spyker wordmark are public domain on Commons.
 - Team logos and names are trademarks of their owners. Stewardle is an unofficial fan project, not associated with Formula 1 or any team.
 
 ---

@@ -11,7 +11,8 @@ test("shows an empty six-row board with the seven clue columns", async ({ page }
   await expect(page).toHaveTitle("Stewardle");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/stewardle/i);
   const header = (await page.locator(".board .row.header").innerText()).replace(/\s+/g, " ").trim();
-  expect(header).toBe("Driver Flag Team Car Num Driver Age First Year Race Wins");
+  // The labels are styled in capitals; their words are what matters.
+  expect(header).toMatch(/^Driver Flag Team Car Num Driver Age First Year Race Wins$/i);
   await expect(game.rows).toHaveCount(6);
   for (let i = 0; i < 6; i++) expect(await game.rowTexts(i)).toEqual(["", "", "", "", "", "", ""]);
 });
