@@ -120,7 +120,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-`npm run dev` starts the game at http://localhost:5173, and `npm test` runs every check (format, lint, typecheck, unit tests, build and the browser tests, which need `npx playwright install --with-deps chromium webkit` once). The tests replay recorded Jolpica responses; `npm run fixtures` re-records them and `npm run screenshot` redraws the picture above. `npm run icons` and `npm run og-image` redraw the app icons and the link preview, and `npm run logos` rebuilds team logos from the sources listed in `src/core/logos.json` (a weekly workflow opens an issue when a new team needs one or a logo changes). Design choices are recorded in `docs/decisions.md`.
+`npm run dev` starts the game at http://localhost:5173, and `npm test` runs every check (format, lint, typecheck, unit tests, build and the browser tests, which need `npx playwright install --with-deps chromium webkit` once). The tests replay recorded Jolpica responses; `npm run fixtures` re-records them and `npm run screenshot` redraws the picture above. `npm run icons` and `npm run og-image` redraw the app icons and the link preview, and `npm run logos` rebuilds team logos from the sources listed in `src/core/logos.json` (a weekly workflow opens an issue when a new team needs one or a logo changes).
 
 ---
 
