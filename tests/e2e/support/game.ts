@@ -147,12 +147,18 @@ export class Game {
     return texts[texts.length - 1] ?? "";
   }
 
-  /** Product of the opacities of an element and its ancestors (1 = fully shown). */
+  /**
+   * Product of the opacities of an element and its ancestors (1 = fully
+   * shown, 0 = absent). Read in one step: a dialog can be removed at the end
+   * of its exit animation, and a separate count-then-evaluate would wait
+   * forever for an element that disappeared in between.
+   */
   private async effectiveOpacity(locator: Locator): Promise<number> {
-    if ((await locator.count()) === 0) return 0;
-    return locator.first().evaluate((el) => {
+    return locator.evaluateAll((elements) => {
+      const [first] = elements;
+      if (!first) return 0;
       let opacity = 1;
-      for (let node: Element | null = el; node; node = node.parentElement) {
+      for (let node: Element | null = first; node; node = node.parentElement) {
         const style = getComputedStyle(node);
         if (style.display === "none" || style.visibility === "hidden") return 0;
         opacity *= Number(style.opacity);

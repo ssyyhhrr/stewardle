@@ -25,15 +25,30 @@
   /** Whether the dialog is on the page: from opening until its exit animation ends. */
   let shown = $state(false);
   let closing = $state(false);
+  /**
+   * Finishes closing if the exit animation never reports its end, which
+   * happens when the browser pauses animations (a hidden tab, say).
+   */
+  let fallback: ReturnType<typeof setTimeout> | undefined;
+  const EXIT_MS = 140;
 
   $effect(() => {
     if (open) {
+      clearTimeout(fallback);
       shown = true;
       closing = false;
     } else if (shown) {
       if (prefersReducedMotion.current) finishClosing();
-      else closing = true;
+      else {
+        closing = true;
+        clearTimeout(fallback);
+        fallback = setTimeout(finishClosing, EXIT_MS + 100);
+      }
     }
+  });
+
+  $effect(() => () => {
+    clearTimeout(fallback);
   });
 
   $effect(() => {
@@ -46,6 +61,7 @@
   });
 
   function finishClosing(): void {
+    clearTimeout(fallback);
     dialog?.close();
     shown = false;
     closing = false;
