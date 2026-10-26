@@ -186,6 +186,8 @@ export class Game {
           (await this.effectiveOpacity(this.tutorial)) + (await this.effectiveOpacity(this.statsDialog)),
       )
       .toBe(0);
+    // Faded out isn't enough: input only reaches the page once no dialog is modal.
+    await expect(this.page.locator("dialog[open]")).toHaveCount(0);
   }
 
   async openTutorial(): Promise<void> {

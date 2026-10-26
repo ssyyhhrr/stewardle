@@ -11,9 +11,11 @@
     value: number;
     /** Milliseconds before counting starts, or null to show the value at once. */
     delay: number | null;
+    /** Called once the number shows its final value. */
+    ondone?: (() => void) | undefined;
   }
 
-  const { value, delay }: Props = $props();
+  const { value, delay, ondone }: Props = $props();
   // Whether to count is decided once, when the tile first appears.
   const shown = untrack(() => {
     const animate = delay !== null && !prefersReducedMotion.current;
@@ -21,7 +23,7 @@
   });
 
   $effect(() => {
-    void shown.set(value);
+    void shown.set(value).then(() => ondone?.());
   });
 </script>
 

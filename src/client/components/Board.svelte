@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { prefersReducedMotion } from "svelte/motion";
+  import { SvelteSet } from "svelte/reactivity";
   import type { Verdict } from "../../core/clues";
   import { logoGlow } from "../../core/logos";
   import { MAX_GUESSES } from "../../core/session";
@@ -40,20 +41,19 @@
 
   const empty = $derived(Math.max(0, MAX_GUESSES - rows.length));
 
-  /** How long a new row takes to land: the last tile's delay plus its number counting up. */
-  const REVEAL_MS = 5 * 110 + 320;
+  /**
+   * Rows still revealing, by driver id: marked aria-busy so screen readers
+   * (and the tests) wait until the last number has finished counting up.
+   */
+  const settling = new SvelteSet<string>();
+  let marked = new Set<string>();
 
-  /** Marks a new row busy until it has finished revealing, so screen readers wait for it. */
-  function revealing(row: HTMLElement): (() => void) | undefined {
-    if (prefersReducedMotion.current) return undefined;
-    row.setAttribute("aria-busy", "true");
-    const timer = setTimeout(() => {
-      row.removeAttribute("aria-busy");
-    }, REVEAL_MS);
-    return () => {
-      clearTimeout(timer);
-    };
-  }
+  $effect.pre(() => {
+    for (const [index, row] of rows.entries())
+      if (index >= revealFrom && !marked.has(row.driverId) && !prefersReducedMotion.current)
+        settling.add(row.driverId);
+    marked = new Set(rows.map((row) => row.driverId));
+  });
 </script>
 
 <section class="board panel" aria-label="Guesses">
@@ -78,7 +78,7 @@
       class="row"
       role="group"
       aria-label={`Guess: ${driver.firstName} ${driver.lastName}`}
-      {@attach reveal && revealing}
+      aria-busy={settling.has(row.driverId) || undefined}
     >
       <Tile kind="code" team={driver.team.colour} label={`${driver.firstName} ${driver.lastName}`}>
         <span>{driver.code}</span>
@@ -109,7 +109,13 @@
       </Tile>
       {#each numbers as { verdict, value, what }, i (what)}
         <Tile {verdict} column={i + 2} {reveal} label={`${what} ${String(value)}: ${WORDS[verdict]}`}>
-          <span><TileNumber {value} delay={reveal ? (i + 2) * 110 : null} /></span>
+          <span
+            ><TileNumber
+              {value}
+              delay={reveal ? (i + 2) * 110 : null}
+              ondone={i === numbers.length - 1 ? () => settling.delete(row.driverId) : undefined}
+            /></span
+          >
         </Tile>
       {/each}
     </div>

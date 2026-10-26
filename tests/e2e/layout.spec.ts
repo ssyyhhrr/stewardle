@@ -11,9 +11,16 @@ import { ANSWER_NAME, WRONG_GUESSES } from "./support/scenario";
 
 const WIDTHS = [320, 360, 375, 390, 768, 1024, 1280];
 
+// Sizes are what matter here; skipping the row reveals and dialog animations
+// keeps the 21 dialog openings inside the time limit in WebKit.
+test.use({ reducedMotion: "reduce" });
+
 test("fits every width from 320px phones to desktops", async ({ page, isMobile }) => {
   // One pass per engine is enough: the test sets its own viewport sizes.
   test.skip(isMobile, "covered by the desktop projects");
+  // Seven widths with three dialogs each: in WebKit, alongside the rest of
+  // the suite, this can take most of the default minute.
+  test.slow();
   await page.setViewportSize({ width: 320, height: 640 });
   const game = await openGame(page);
   await game.closeModal();
