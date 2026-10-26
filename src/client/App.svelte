@@ -31,7 +31,7 @@
   onhelp={() => (game.tutorialOpen = true)}
 />
 
-<main class:over={game.over}>
+<main>
   {#if game.phase === "unavailable"}
     <section class="unavailable">
       <WifiOff size={44} aria-hidden="true" />
@@ -115,13 +115,8 @@
 
   @media (min-width: 560px) {
     main {
-      gap: 22px;
-      padding: 20px 16px 16px;
-    }
-    /* Won or lost: tighter, so the whole result fits above the footer. */
-    main.over {
-      gap: 12px;
-      padding: 12px 16px 8px;
+      gap: 28px;
+      padding: 28px 16px 16px;
     }
   }
 

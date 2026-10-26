@@ -1,7 +1,7 @@
 <!--
-  Shown in place of the guess box once the day's game is over: the radio-call
-  headline, the answer, Share, and the countdown to the next puzzle. Share
-  and the clock form one block of equal width, set apart from the headline.
+  Shown in place of the guess box once the day's game is over, in three groups
+  spaced well apart: the radio-call headline with the answer, Share, and the
+  countdown to the next puzzle. Share and the clock share one width.
 -->
 <script lang="ts">
   import type { DriverCard } from "../../core/api";
@@ -42,7 +42,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 28px;
     text-align: center;
   }
 
@@ -51,14 +51,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
 
   /* As wide as the clock (or the longest confirmation), with Share stretched to match. */
   .actions {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 36px;
     min-width: 280px;
   }
 
@@ -86,10 +86,10 @@
 
   @media (max-width: 559px) {
     .result {
-      gap: 16px;
+      gap: 24px;
     }
     .actions {
-      gap: 18px;
+      gap: 32px;
     }
     h2 {
       font-size: 30px;
