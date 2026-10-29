@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { startFakeJolpica, type FakeJolpica } from "../../tests/support/fake-jolpica";
 import { recordedRoster, recordedSeason } from "../../tests/support/recorded-roster";
 import { JolpicaUnavailableError, fetchRoster, type JolpicaOptions } from "./jolpica";
-import { silentLogger } from "./log";
+import { silentLogger, type LogFields } from "./log";
 
 let fake: FakeJolpica;
 beforeEach(async () => {
@@ -61,6 +61,40 @@ describe("fetchRoster", () => {
     expect(lawson?.teams.at(-1)?.id).toBe("red");
     const hulkenberg = snapshot.drivers.find((d) => d.id === "hulkenberg");
     expect(hulkenberg?.teams.at(-1)?.id).toBe("audi");
+  });
+
+  it("warns about drivers showing the unknown flag, and still builds the roster", async () => {
+    // Jolpica changes Leclerc's nationality to one the table doesn't know, and drops Norris's.
+    const renamed = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const response = await fetch(url, init);
+      const href = url instanceof Request ? url.url : url.toString();
+      if (!href.includes(`/${String(recordedSeason)}/driverStandings.json`)) return response;
+      const body = (await response.json()) as {
+        MRData: {
+          StandingsTable: {
+            StandingsLists: { DriverStandings: { Driver: { driverId: string; nationality?: string } }[] }[];
+          };
+        };
+      };
+      for (const { Driver } of body.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? []) {
+        if (Driver.driverId === "leclerc") Driver.nationality = "Martian";
+        if (Driver.driverId === "norris") delete Driver.nationality;
+      }
+      return Response.json(body);
+    };
+    const warnings: { message: string; fields: LogFields | undefined }[] = [];
+    const log = {
+      ...silentLogger,
+      warn: (message: string, fields?: LogFields) => warnings.push({ message, fields }),
+    };
+    const snapshot = await fetchRoster(options({ fetch: renamed, log }));
+    expect(snapshot.drivers.length).toBe(recordedRoster().length);
+    expect(warnings).toEqual([
+      {
+        message: expect.stringContaining("unknown flag") as unknown,
+        fields: { drivers: "Charles Leclerc (Martian), Lando Norris (no nationality)" },
+      },
+    ]);
   });
 
   it("tolerates a new season that doesn't exist yet", async () => {

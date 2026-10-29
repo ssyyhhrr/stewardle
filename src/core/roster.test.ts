@@ -130,6 +130,35 @@ describe("parsing", () => {
     expect(parseStandings(2030, body).standings[0]?.driver.permanentNumber).toBeNull();
   });
 
+  it("gives a driver with no nationality the unknown flag instead of failing", () => {
+    const season = recordedStandings().find((s) => s.season === 2024);
+    if (!season) throw new Error("2024 not recorded");
+    const noNationality = {
+      ...season,
+      standings: season.standings.map((e) => ({ ...e, driver: { ...e.driver, nationality: "" } })),
+    };
+    const hulkenberg = buildRoster([noNationality], null).find((d) => d.id === "hulkenberg");
+    expect(hulkenberg).toMatchObject({ nationality: "", flag: UNKNOWN_FLAG });
+    const body = {
+      MRData: {
+        StandingsTable: {
+          StandingsLists: [
+            {
+              DriverStandings: [
+                {
+                  wins: "0",
+                  Driver: { driverId: "x", givenName: "A", familyName: "B", dateOfBirth: "2000-01-01" },
+                  Constructors: [],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    expect(parseStandings(2030, body).standings[0]?.driver.nationality).toBe("");
+  });
+
   it("invents a timing code from the surname when Jolpica has none", () => {
     const season = recordedStandings().find((s) => s.season === 2024);
     if (!season) throw new Error("2024 not recorded");

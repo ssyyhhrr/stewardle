@@ -47,6 +47,13 @@ describe("compareGuess", () => {
     expect(compareGuess(mystery, colapinto, puzzleDay).nationality).toBe("incorrect");
   });
 
+  it("never matches a missing nationality, except for the driver themselves", () => {
+    const colapinto = named(roster, "Franco Colapinto");
+    const blank = { ...colapinto, id: "blank", nationality: "", flag: "xx" };
+    expect(compareGuess(blank, { ...blank, id: "other" }, puzzleDay).nationality).toBe("incorrect");
+    expect(compareGuess(blank, blank, puzzleDay).nationality).toBe("correct");
+  });
+
   it("compares ages on the puzzle day", () => {
     // One day younger: on 16 Oct Leclerc has turned 29 but the twin is still 28.
     const twin = { ...leclerc, id: "twin", dateOfBirth: "1997-10-17" };

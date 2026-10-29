@@ -87,7 +87,7 @@
         verdict={feedback.nationality}
         column={0}
         {reveal}
-        label={`Nationality ${driver.nationality}: ${WORDS[feedback.nationality]}`}
+        label={`Nationality ${driver.nationality || "unknown"}: ${WORDS[feedback.nationality]}`}
       >
         <img class="flag" src={`/flags/${driver.flag}.svg`} alt="" />
       </Tile>

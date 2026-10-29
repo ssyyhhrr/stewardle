@@ -49,13 +49,15 @@ function compareTeams(guess: Driver, answer: Driver): Verdict {
 /**
  * Same country? Compares flag codes, because Jolpica has spelled one
  * nationality two ways ("Argentine"/"Argentinian"); the original game compared
- * flags too. Unknown nationalities (the "xx" flag) fall back to the words.
+ * flags too. Unknown nationalities (the "xx" flag) fall back to the words, and
+ * a missing nationality matches only the driver themselves.
  */
 function compareNationalities(guess: Driver, answer: Driver): Verdict {
   const same =
-    guess.flag !== UNKNOWN_FLAG && answer.flag !== UNKNOWN_FLAG
+    guess.id === answer.id ||
+    (guess.flag !== UNKNOWN_FLAG && answer.flag !== UNKNOWN_FLAG
       ? guess.flag === answer.flag
-      : guess.nationality === answer.nationality;
+      : guess.nationality !== "" && guess.nationality === answer.nationality);
   return same ? "correct" : "incorrect";
 }
 

@@ -23,9 +23,9 @@ export interface Driver {
   readonly lastName: string;
   /** Three-letter timing code shown in the first tile ("VER"). */
   readonly code: string;
-  /** Jolpica demonym ("Dutch"); what the flag tile compares. */
+  /** Jolpica demonym ("Dutch"); what the flag tile compares. Empty if Jolpica has none. */
   readonly nationality: string;
-  /** ISO flag code for the nationality ("nl"). */
+  /** ISO flag code for the nationality ("nl"), or UNKNOWN_FLAG. */
   readonly flag: string;
   readonly number: number;
   /** YYYY-MM-DD; age is computed per puzzle day from this. */
@@ -60,6 +60,7 @@ interface DriverInfo {
   readonly givenName: string;
   readonly familyName: string;
   readonly dateOfBirth: string;
+  /** Empty if Jolpica has none. */
   readonly nationality: string;
 }
 
@@ -122,7 +123,9 @@ function parseDriver(value: unknown, where: string): DriverInfo {
     givenName: text(value, "givenName", where),
     familyName: text(value, "familyName", where),
     dateOfBirth: text(value, "dateOfBirth", where),
-    nationality: text(value, "nationality", where),
+    // Jolpica lists some new drivers before it has their nationality; they get
+    // the unknown flag rather than failing the whole refresh.
+    nationality: optionalText(value, "nationality", where) ?? "",
   };
 }
 

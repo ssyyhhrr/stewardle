@@ -4,9 +4,11 @@
  * between them to stay well inside its rate limit (4/s burst, 500/hour).
  */
 import { dayKeyOf } from "../core/calendar";
+import { UNKNOWN_FLAG } from "../core/nationalities";
 import {
   FIRST_SEASON,
   buildRoster,
+  fullName,
   parseLatestRace,
   parseStandings,
   type LatestRace,
@@ -111,5 +113,11 @@ export async function fetchRoster(options: JolpicaOptions): Promise<RosterSnapsh
   const drivers = buildRoster(seasons, await latestRace(options, currentSeason));
   if (drivers.length === 0) throw new JolpicaUnavailableError("Jolpica returned no drivers");
   options.log.info("fetched roster", { drivers: drivers.length, seasons: seasons.length });
+  const unflagged = drivers.filter((d) => d.flag === UNKNOWN_FLAG);
+  if (unflagged.length > 0) {
+    options.log.warn("drivers showing the unknown flag; add their nationality to src/core/nationalities.ts", {
+      drivers: unflagged.map((d) => `${fullName(d)} (${d.nationality || "no nationality"})`).join(", "),
+    });
+  }
   return { fetchedAt: new Date(options.now()).toISOString(), drivers };
 }
