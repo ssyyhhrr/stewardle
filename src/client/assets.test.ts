@@ -3,6 +3,9 @@
  * produce must exist (a missing one was a visible bug in the old game), every
  * team in the table must have a logo, and every logo file must be named after
  * a known team (so it is actually used) and recorded in the logo manifest.
+ *
+ * The whole flag-icons set is shipped, not just the flags in use, so a new
+ * nationality needs only a line in the table.
  */
 import { readdirSync } from "node:fs";
 import path from "node:path";
@@ -19,8 +22,9 @@ const files = (dir: string, ext: string): string[] =>
     .sort();
 
 describe("static images", () => {
-  it("has exactly the flags the nationality table can show", () => {
-    expect(files("flags", ".svg")).toEqual(knownFlagCodes());
+  it("has a flag for every code the nationality table can show", () => {
+    const flags = new Set(files("flags", ".svg"));
+    expect(knownFlagCodes().filter((code) => !flags.has(code))).toEqual([]);
   });
 
   it("has a logo, recorded in the manifest, for exactly the teams in the table", () => {
