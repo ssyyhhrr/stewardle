@@ -8,7 +8,7 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <a href="https://github.com/ssyyhhrr/stewardle/">
+  <a href="https://stewardle.com/">
     <img src="src/client/public/icons/icon-192.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">Stewardle</h3>
