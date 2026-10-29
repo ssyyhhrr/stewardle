@@ -107,6 +107,8 @@
       {#each suggestions as suggestion, i (suggestion.driver.id)}
         {@const end = suggestion.matchStart + suggestion.matchLength}
         {@const driver = suggestion.driver}
+        <!-- The keyboard is handled on the input, as in the ARIA combobox pattern. -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           id={`${listId}-${String(i)}`}
           role="option"
@@ -114,8 +116,11 @@
           class:active={i === active}
           style:--team={driver.team.colour}
           onpointerdown={(event) => {
-            // Keep focus in the input so the keyboard stays up on phones.
+            // Keep focus in the input so the keyboard stays up on phones. Picking
+            // waits for the click, which a finger that scrolls the list never sends.
             event.preventDefault();
+          }}
+          onclick={() => {
             choose(driver.id);
           }}
         >
@@ -204,6 +209,8 @@
     /* Seven rows, or as many as fit under the box on a short screen. */
     max-height: min(calc(7 * 49px), calc(100dvh - 90px));
     overflow-y: auto;
+    /* Dragging past either end of the list leaves the page behind it still. */
+    overscroll-behavior: contain;
     background: var(--panel);
     border: 1px solid var(--edge);
     box-shadow: 0 12px 28px rgb(0 0 0 / 28%);

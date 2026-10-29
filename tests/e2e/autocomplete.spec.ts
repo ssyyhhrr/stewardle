@@ -32,3 +32,47 @@ test("refuses text that isn't a driver without using a guess", async ({ page }) 
   await page.waitForTimeout(1000);
   expect(await game.filledRowCount()).toBe(0);
 });
+
+test("tapping or clicking a suggestion guesses it and keeps focus", async ({ page, hasTouch }) => {
+  const game = await start(page);
+  await game.input.fill("a");
+  const pick = game.suggestions.nth(1);
+  const code = (await pick.locator(".code").innerText()).trim();
+  if (hasTouch) await pick.tap();
+  else await pick.click();
+  await expect.poll(() => game.scoredRowCount(), { timeout: 10_000 }).toBe(1);
+  expect((await game.rowTexts(0))[0]).toBe(code);
+  await expect(game.input).toHaveValue("");
+  // Focus staying in the box is what keeps the phone keyboard up between guesses.
+  await expect(game.input).toBeFocused();
+});
+
+test("dragging the suggestions scrolls them without guessing", async ({ page, browserName, isMobile }) => {
+  // Playwright has no touch-drag API, and touch input sent over CDP only works
+  // in Chromium, so this runs on the Chromium phone alone.
+  test.skip(browserName !== "chromium" || !isMobile, "touch drags need CDP, which only Chromium has");
+  const game = await start(page);
+  await game.input.focus();
+  await game.input.fill("a"); // Far more than seven drivers match, so the list scrolls.
+  const listbox = page.getByRole("listbox");
+  await expect(listbox).toBeVisible();
+  const box = await listbox.boundingBox();
+  if (!box) throw new Error("the suggestion list has no box");
+
+  const cdp = await page.context().newCDPSession(page);
+  const x = box.x + box.width / 2;
+  const from = box.y + box.height - 10;
+  const to = box.y + 10;
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y: from }] });
+  const steps = 10;
+  for (let i = 1; i <= steps; i++) {
+    const y = from + ((to - from) * i) / steps;
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y }] });
+  }
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+
+  await expect(listbox).toBeVisible();
+  expect(await listbox.evaluate((list) => list.scrollTop)).toBeGreaterThan(0);
+  await expect(game.input).toHaveValue("a");
+  expect(await game.filledRowCount()).toBe(0);
+});
