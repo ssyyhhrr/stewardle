@@ -30,6 +30,14 @@ export interface Driver {
   readonly number: number;
   /** YYYY-MM-DD; age is computed per puzzle day from this. */
   readonly dateOfBirth: string;
+  /**
+   * YYYY-MM-DD, for a driver who has died; their age stays at their age on
+   * this day. Looked up on Wikidata by the server after the roster is built.
+   * Absent means living (and in rosters saved before death dates existed).
+   */
+  readonly dateOfDeath?: string;
+  /** English Wikipedia article URL from Jolpica; only used to look up the death date. */
+  readonly wikipedia?: string;
   /** First season (from 2000) in which the driver scored a standings entry. */
   readonly firstSeason: number;
   /** Race wins from 2000 onwards (every permanent-number driver debuted after 1999). */
@@ -62,6 +70,8 @@ interface DriverInfo {
   readonly dateOfBirth: string;
   /** Empty if Jolpica has none. */
   readonly nationality: string;
+  /** English Wikipedia article URL, if Jolpica has one. */
+  readonly url: string | null;
 }
 
 interface ConstructorRef {
@@ -126,6 +136,7 @@ function parseDriver(value: unknown, where: string): DriverInfo {
     // Jolpica lists some new drivers before it has their nationality; they get
     // the unknown flag rather than failing the whole refresh.
     nationality: optionalText(value, "nationality", where) ?? "",
+    url: optionalText(value, "url", where),
   };
 }
 
@@ -237,6 +248,8 @@ export function buildRoster(seasons: readonly SeasonStandings[], latestRace: Lat
     flag: flagFor(info.nationality),
     number,
     dateOfBirth: info.dateOfBirth,
+    // dateOfDeath is left unset: the server adds death dates from Wikidata.
+    ...(info.url === null ? {} : { wikipedia: info.url }),
     firstSeason,
     wins,
     teams,

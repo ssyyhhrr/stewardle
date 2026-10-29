@@ -1,6 +1,8 @@
 /**
  * A stand-in for api.jolpi.ca that replays the responses recorded by
- * scripts/generate-fixtures.ts.
+ * scripts/generate-fixtures.ts. It also stands in for Wikidata's SPARQL
+ * endpoint (`POST /wikidata/sparql`), answering every query with the recorded
+ * dates-of-death response.
  *
  * It accepts both request shapes a client can send:
  *  - origin-form (`GET /ergast/f1/2024/driverStandings.json`), used when a
@@ -15,18 +17,24 @@ import type { AddressInfo } from "node:net";
 import path from "node:path";
 
 const FIXTURE_DIR = path.resolve(import.meta.dirname, "../fixtures/jolpica");
+const WIKIDATA_FIXTURE = path.resolve(import.meta.dirname, "../fixtures/wikidata/sparql.json");
+
+/** The path the fake answers Wikidata SPARQL queries on; also its key in `requests` and `failPath`. */
+export const WIKIDATA_PATH = "wikidata/sparql";
 
 /** A running fake; `baseUrl` is what a client should use as its Jolpica root. */
 export interface FakeJolpica {
   readonly baseUrl: string;
   readonly port: number;
-  /** Every API path requested so far, e.g. `2024/driverStandings.json`. */
+  /** What a client should use as its Wikidata SPARQL endpoint (WIKIDATA_SPARQL_URL). */
+  readonly wikidataUrl: string;
+  /** Every API path requested so far, e.g. `2024/driverStandings.json`, or WIKIDATA_PATH. */
   readonly requests: string[];
   /** Makes every following request fail with this HTTP status (null to heal). */
   failWith(status: number | null): void;
   /** Makes only the next `count` requests fail with `status`. */
   failNext(count: number, status: number): void;
-  /** Makes every request for one API path fail with `status`. */
+  /** Makes every request for one API path (or WIKIDATA_PATH) fail with `status`. */
   failPath(apiPath: string, status: number): void;
   close(): Promise<void>;
 }
@@ -39,6 +47,12 @@ export function apiPathOf(requestUrl: string): string | null {
   return match[1];
 }
 
+/** WIKIDATA_PATH for a request to the fake SPARQL endpoint, otherwise null. */
+function wikidataPathOf(requestUrl: string): string | null {
+  const { pathname } = new URL(requestUrl, "http://fake.invalid");
+  return pathname === `/${WIKIDATA_PATH}` ? WIKIDATA_PATH : null;
+}
+
 /** Starts the fake on `port` (0 picks a free one). */
 export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
   const requests: string[] = [];
@@ -48,8 +62,9 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
   const failingPaths = new Map<string, number>();
 
   const server: Server = createServer((req, res) => {
-    const apiPath = apiPathOf(req.url ?? "/");
+    const apiPath = apiPathOf(req.url ?? "/") ?? wikidataPathOf(req.url ?? "/");
     if (apiPath) requests.push(apiPath);
+    req.resume(); // a SPARQL query arrives as a POST body; the fake doesn't need it
     const reply = (status: number, body: string): void => {
       res.writeHead(status, { "content-type": "application/json" });
       res.end(body);
@@ -66,6 +81,21 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
     }
     if (failure !== null) {
       reply(failure, JSON.stringify({ detail: "injected failure" }));
+      return;
+    }
+    if (apiPath === WIKIDATA_PATH) {
+      if (req.method !== "POST") {
+        reply(405, JSON.stringify({ detail: "SPARQL queries are POSTed" }));
+        return;
+      }
+      readFile(WIKIDATA_FIXTURE, "utf8").then(
+        (body) => {
+          reply(200, body);
+        },
+        () => {
+          reply(404, JSON.stringify({ detail: "no Wikidata fixture" }));
+        },
+      );
       return;
     }
     if (!apiPath) {
@@ -87,6 +117,7 @@ export async function startFakeJolpica(port = 0): Promise<FakeJolpica> {
   return {
     baseUrl: `http://127.0.0.1:${actualPort}/ergast/f1`,
     port: actualPort,
+    wikidataUrl: `http://127.0.0.1:${actualPort}/${WIKIDATA_PATH}`,
     requests,
     failWith(status) {
       failure = status;

@@ -55,10 +55,13 @@ export function gameNumber(day: DayKey): number {
 /**
  * Age in whole years on `day` for someone born on `dateOfBirth` (YYYY-MM-DD).
  * Computed per puzzle day rather than stored, so it is right on birthdays.
+ * For someone who died before `day` (`dateOfDeath`, YYYY-MM-DD), it is their
+ * age on the day they died, so a deceased driver's age stops rising.
  */
-export function ageOn(dateOfBirth: string, day: DayKey): number {
+export function ageOn(dateOfBirth: string, day: DayKey, dateOfDeath?: string): number {
+  const on = dateOfDeath !== undefined && dateOfDeath < day ? dateOfDeath : day;
   const [birthYear, birthMonth, birthDay] = dateOfBirth.split("-").map(Number) as [number, number, number];
-  const [year, month, date] = day.split("-").map(Number) as [number, number, number];
+  const [year, month, date] = on.split("-").map(Number) as [number, number, number];
   const hadBirthday = month > birthMonth || (month === birthMonth && date >= birthDay);
   return year - birthYear - (hadBirthday ? 0 : 1);
 }

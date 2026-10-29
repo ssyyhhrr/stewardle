@@ -31,5 +31,10 @@
     "2025/driverStandings.json",
     "2026/driverStandings.json",
     "2026/last/results.json"
-  ]
+  ],
+  "wikidata": {
+    "path": "../wikidata/sparql.json",
+    "source": "query.wikidata.org",
+    "capturedAt": "2026-10-29T21:19:36.219Z"
+  }
 }

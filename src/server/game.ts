@@ -95,6 +95,22 @@ export class GameService {
   }
 
   /**
+   * Dates of death (driverId → YYYY-MM-DD) in the active and pending
+   * rosters, to carry forward into the next fetch when Wikidata can't be
+   * reached. A date of death never changes, so the newest roster's wins.
+   */
+  knownDeaths(): ReadonlyMap<string, string> {
+    const known = new Map<string, string>();
+    for (const snapshot of [this.rosterState.active, this.rosterState.pending]) {
+      for (const driver of snapshot?.drivers ?? []) {
+        // Saved rosters aren't validated driver by driver, so check the type.
+        if (typeof driver.dateOfDeath === "string") known.set(driver.id, driver.dateOfDeath);
+      }
+    }
+    return known;
+  }
+
+  /**
    * Stores a freshly fetched roster: immediately on first boot, otherwise
    * from the day after the fetch *started* (`startedAt`, epoch ms), so a
    * 23:30 refresh that finishes after midnight isn't pushed back a day.

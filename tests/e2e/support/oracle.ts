@@ -1,6 +1,6 @@
 /**
  * An independent statement of the clue rules, computed straight from the
- * recorded Jolpica responses. The e2e specs compare what the page shows with
+ * recorded Jolpica responses (and the recorded Wikidata dates of death). The e2e specs compare what the page shows with
  * what this oracle says, so they never depend on the app's own roster code.
  *
  * Deliberately simple: it only needs to be right for the drivers in
@@ -10,6 +10,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const FIXTURE_DIR = path.resolve(import.meta.dirname, "../../fixtures/jolpica");
+const WIKIDATA_FIXTURE = path.resolve(import.meta.dirname, "../../fixtures/wikidata/sparql.json");
 
 /** A tile's verdict, named as the page's CSS classes name them. */
 export type TileState = "correct" | "incorrect" | "previous" | "up" | "down";
@@ -23,6 +24,8 @@ export interface OracleDriver {
   teams: string[];
   number: number;
   dateOfBirth: string;
+  /** YYYY-MM-DD for a driver who has died; their age stops rising on this day. */
+  dateOfDeath: string | null;
   firstYear: number;
   wins: number;
 }
@@ -41,6 +44,7 @@ interface StandingsFile {
             familyName: string;
             dateOfBirth: string;
             nationality: string;
+            url?: string;
           };
           Constructors: { constructorId: string }[];
         }[];
@@ -54,7 +58,23 @@ function brandOf(constructorId: string, season: number): string {
   return constructorId === "sauber" && season >= 2024 ? "kick" : constructorId;
 }
 
+/** An English Wikipedia article's title, however its URL is written ("Jules_Bianchi"). */
+function articleTitle(url: string): string {
+  return decodeURIComponent(url.replace(/^https?:\/\/en\.wikipedia\.org\/wiki\//, "")).replace(/ /g, "_");
+}
+
+/** Article title → date of death, from the recorded Wikidata response. */
+function loadDeaths(): Map<string, string> {
+  const file = JSON.parse(readFileSync(WIKIDATA_FIXTURE, "utf8")) as {
+    results: { bindings: { article: { value: string }; death: { value: string } }[] };
+  };
+  return new Map(
+    file.results.bindings.map((b) => [articleTitle(b.article.value), b.death.value.slice(0, 10)]),
+  );
+}
+
 function loadDrivers(): Map<string, OracleDriver> {
+  const deaths = loadDeaths();
   const manifest = JSON.parse(readFileSync(path.join(FIXTURE_DIR, "manifest.json"), "utf8")) as {
     currentSeason: number;
   };
@@ -74,6 +94,7 @@ function loadDrivers(): Map<string, OracleDriver> {
         teams: [],
         number: Number(d.permanentNumber),
         dateOfBirth: d.dateOfBirth,
+        dateOfDeath: d.url === undefined ? null : (deaths.get(articleTitle(d.url)) ?? null),
         firstYear: season,
         wins: 0,
       };
@@ -96,8 +117,11 @@ export function driverNamed(name: string): OracleDriver {
   throw new Error(`No driver named ${name} in the fixtures`);
 }
 
-/** Age in whole years on the given UTC day. */
-export function ageOn(dateOfBirth: string, day: Date): number {
+/** Age in whole years on the given UTC day, or on the day they died if that was earlier. */
+export function ageOn(dateOfBirth: string, day: Date, dateOfDeath: string | null = null): number {
+  if (dateOfDeath !== null && Date.parse(`${dateOfDeath}T00:00:00Z`) < day.getTime()) {
+    day = new Date(`${dateOfDeath}T00:00:00Z`);
+  }
   const [y, m, d] = dateOfBirth.split("-").map(Number) as [number, number, number];
   let age = day.getUTCFullYear() - y;
   if (day.getUTCMonth() + 1 < m || (day.getUTCMonth() + 1 === m && day.getUTCDate() < d)) age--;
@@ -124,7 +148,10 @@ export function expectedStates(guessName: string, answerName: string, day = new 
     guess.nationality === answer.nationality ? "correct" : "incorrect",
     teamState,
     numeric(guess.number, answer.number),
-    numeric(ageOn(guess.dateOfBirth, day), ageOn(answer.dateOfBirth, day)),
+    numeric(
+      ageOn(guess.dateOfBirth, day, guess.dateOfDeath),
+      ageOn(answer.dateOfBirth, day, answer.dateOfDeath),
+    ),
     numeric(guess.firstYear, answer.firstYear),
     numeric(guess.wins, answer.wins),
   ];

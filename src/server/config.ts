@@ -14,6 +14,8 @@ export interface Config {
   readonly staticDir: string;
   /** Jolpica base URL, without a trailing slash. */
   readonly jolpicaBaseUrl: string;
+  /** Wikidata SPARQL endpoint, for drivers' dates of death. */
+  readonly wikidataSparqlUrl: string;
   /** Token-signing secret; if unset, one is generated and kept in dataDir/secret. */
   readonly secret: string | null;
 }
@@ -40,6 +42,7 @@ export function loadConfig(env: NodeJS.ProcessEnv, appRoot: string): Config {
     dataDir: path.resolve(env["DATA_DIR"] ?? path.join(appRoot, "data")),
     staticDir: path.resolve(env["STATIC_DIR"] ?? path.join(appRoot, "dist/client")),
     jolpicaBaseUrl: (env["JOLPICA_BASE_URL"] ?? "https://api.jolpi.ca/ergast/f1").replace(/\/+$/, ""),
+    wikidataSparqlUrl: env["WIKIDATA_SPARQL_URL"] ?? "https://query.wikidata.org/sparql",
     secret,
   };
 }

@@ -61,13 +61,16 @@ function compareNationalities(guess: Driver, answer: Driver): Verdict {
   return same ? "correct" : "incorrect";
 }
 
-/** Scores `guess` against `answer`; ages are taken on the puzzle `day`. */
+/** Scores `guess` against `answer`; ages are taken on the puzzle `day` (or the day a driver died). */
 export function compareGuess(guess: Driver, answer: Driver, day: DayKey): Feedback {
   return {
     nationality: compareNationalities(guess, answer),
     team: compareTeams(guess, answer),
     number: compareNumbers(guess.number, answer.number),
-    age: compareNumbers(ageOn(guess.dateOfBirth, day), ageOn(answer.dateOfBirth, day)),
+    age: compareNumbers(
+      ageOn(guess.dateOfBirth, day, guess.dateOfDeath),
+      ageOn(answer.dateOfBirth, day, answer.dateOfDeath),
+    ),
     firstSeason: compareNumbers(guess.firstSeason, answer.firstSeason),
     wins: compareNumbers(guess.wins, answer.wins),
   };

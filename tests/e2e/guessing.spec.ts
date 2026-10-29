@@ -37,6 +37,20 @@ test("shows the guessed driver's code and numbers in the row", async ({ page }) 
   await expect(game.rows.first().locator("img")).toHaveCount(2); // flag + team logo
 });
 
+test("keeps a deceased driver's age at his age when he died", async ({ page }) => {
+  const game = await openGame(page);
+  await game.closeModal();
+  await game.guess("Jules Bianchi");
+  const jules = driverNamed("Jules Bianchi");
+  // Recorded from Wikidata; if this fails, his Wikipedia link no longer matches a Wikidata sitelink.
+  expect(jules.dateOfDeath).toBe("2015-07-17");
+  const texts = await game.rowTexts(0);
+  expect(texts[4]).toBe("25"); // not his age had he lived, which rises every year
+  expect(texts[4]).toBe(String(ageOn(jules.dateOfBirth, new Date(), jules.dateOfDeath)));
+  expect((await game.allRowStates())[0]).toEqual(expectedStates("Jules Bianchi", ANSWER_NAME));
+  expect((await game.allRowStates())[0]?.[3]).toBe("up"); // Leclerc is older than 25
+});
+
 test("restores today's board after a reload", async ({ page }) => {
   const game = await openGame(page);
   await game.closeModal();

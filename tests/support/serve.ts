@@ -1,5 +1,6 @@
 /**
- * Starts the app under test for Playwright: a fake Jolpica API plus the game
+ * Starts the app under test for Playwright: a fake Jolpica API (which also
+ * answers Wikidata's death-date query from a recording) plus the game
  * server, with today's answer seeded through the server's data files.
  *
  * This is the only test code that knows how the app stores its data. The
@@ -12,7 +13,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { startFakeJolpica } from "./fake-jolpica";
+import { startFakeJolpica, type FakeJolpica } from "./fake-jolpica";
 import { ANSWER_ID, APP_PORT, todayKey } from "../e2e/support/scenario";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
@@ -30,7 +31,7 @@ interface LaunchPlan {
  * test` does). Today's answer is seeded through its history.json, and it
  * fetches its roster from the fake Jolpica like a real first boot.
  */
-async function startApp(fakeBaseUrl: string): Promise<LaunchPlan> {
+async function startApp(fake: FakeJolpica): Promise<LaunchPlan> {
   const entry = path.join(ROOT, "dist/server/main.js");
   if (!existsSync(entry))
     throw new Error("dist/server/main.js is missing: run `npm run build` before the e2e tests");
@@ -49,15 +50,18 @@ async function startApp(fakeBaseUrl: string): Promise<LaunchPlan> {
       HOST: "127.0.0.1",
       DATA_DIR: dir,
       STATIC_DIR: path.join(ROOT, "dist/client"),
-      JOLPICA_BASE_URL: fakeBaseUrl,
+      JOLPICA_BASE_URL: fake.baseUrl,
+      WIKIDATA_SPARQL_URL: fake.wikidataUrl,
     },
   };
 }
 
 async function main(): Promise<void> {
   const fake = await startFakeJolpica();
-  const app = await startApp(fake.baseUrl);
-  process.stdout.write(`fake Jolpica on ${fake.baseUrl}; app on port ${APP_PORT}\n`);
+  const app = await startApp(fake);
+  process.stdout.write(
+    `fake Jolpica on ${fake.baseUrl}, fake Wikidata on ${fake.wikidataUrl}; app on port ${APP_PORT}\n`,
+  );
 
   const child: ChildProcess = spawn(app.command, app.args, { cwd: app.dir, env: app.env, stdio: "inherit" });
   const shutdown = async (code: number): Promise<never> => {

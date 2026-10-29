@@ -26,7 +26,7 @@ export interface DriverCard {
     readonly colour: string;
   };
   readonly number: number;
-  /** Age on the puzzle day. */
+  /** Age on the puzzle day (or on the day they died, for a deceased driver). */
   readonly age: number;
   readonly firstSeason: number;
   readonly wins: number;
@@ -50,7 +50,7 @@ export function toCard(driver: Driver, day: DayKey, hasLogo: (teamId: string) =>
       colour: teamColour(team.id),
     },
     number: driver.number,
-    age: ageOn(driver.dateOfBirth, day),
+    age: ageOn(driver.dateOfBirth, day, driver.dateOfDeath),
     firstSeason: driver.firstSeason,
     wins: driver.wins,
   };

@@ -5,7 +5,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { startFakeJolpica, type FakeJolpica } from "../../tests/support/fake-jolpica";
-import { recordedRoster, recordedSeason } from "../../tests/support/recorded-roster";
+import { recordedJolpicaRoster, recordedRoster, recordedSeason } from "../../tests/support/recorded-roster";
 import { JolpicaUnavailableError, fetchRoster, type JolpicaOptions } from "./jolpica";
 import { silentLogger, type LogFields } from "./log";
 
@@ -31,7 +31,7 @@ function options(overrides: Partial<JolpicaOptions> = {}): JolpicaOptions {
 describe("fetchRoster", () => {
   it("builds the same roster as the recorded data", async () => {
     const snapshot = await fetchRoster(options());
-    expect(snapshot.drivers).toEqual(recordedRoster());
+    expect(snapshot.drivers).toEqual(recordedJolpicaRoster()); // dates of death come later, from Wikidata
     expect(snapshot.fetchedAt).toBe(new Date(Date.UTC(recordedSeason, 8, 26, 23, 30)).toISOString());
     expect(fake.requests).toContain(`${String(recordedSeason)}/last/results.json`);
   });

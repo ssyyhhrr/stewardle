@@ -11,6 +11,7 @@ import { GameService } from "./game";
 import { fetchRoster } from "./jolpica";
 import { consoleLogger as log } from "./log";
 import { ensureRoster, loadSecret, scheduleNightlyRefresh } from "./startup";
+import { addDeathDates } from "./wikidata";
 
 // dist/server/main.js → the app root is two levels up.
 const appRoot = path.resolve(import.meta.dirname, "../..");
@@ -41,7 +42,17 @@ async function main(): Promise<void> {
     hasLogo: (id) => logos.has(id),
     log,
   });
-  const fetchLatest = () => fetchRoster({ baseUrl: config.jolpicaBaseUrl, fetch, ...timing });
+  // Jolpica first (required), then dates of death from Wikidata (best-effort).
+  const fetchLatest = async () =>
+    addDeathDates(
+      await fetchRoster({ baseUrl: config.jolpicaBaseUrl, fetch, ...timing }),
+      game.knownDeaths(),
+      {
+        sparqlUrl: config.wikidataSparqlUrl,
+        fetch,
+        ...timing,
+      },
+    );
 
   await ensureRoster(game, fetchLatest, timing, 5 * 60_000);
   const stopRefresh = scheduleNightlyRefresh(game, fetchLatest, timing);

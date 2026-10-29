@@ -31,4 +31,10 @@ describe("toCard", () => {
       colour: "#9ea3a8",
     });
   });
+
+  it("gives a deceased driver his age when he died", () => {
+    const bianchi = toCard(named(roster, "Jules Bianchi"), day("2026-10-29"), () => false);
+    expect(bianchi.age).toBe(25);
+    expect(bianchi).not.toHaveProperty("dateOfDeath"); // the card is unchanged: just the number
+  });
 });

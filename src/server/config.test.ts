@@ -13,6 +13,7 @@ describe("loadConfig", () => {
       dataDir: "/app/data",
       staticDir: "/app/dist/client",
       jolpicaBaseUrl: "https://api.jolpi.ca/ergast/f1",
+      wikidataSparqlUrl: "https://query.wikidata.org/sparql",
       secret: null,
     });
   });
@@ -25,6 +26,7 @@ describe("loadConfig", () => {
         DATA_DIR: "/var/lib/stewardle",
         STATIC_DIR: "/srv/client",
         JOLPICA_BASE_URL: "http://fake/ergast/f1/",
+        WIKIDATA_SPARQL_URL: "http://fake/wikidata/sparql",
         STEWARDLE_SECRET: "x".repeat(32),
       },
       "/app",
@@ -34,6 +36,7 @@ describe("loadConfig", () => {
       host: "127.0.0.1",
       dataDir: "/var/lib/stewardle",
       jolpicaBaseUrl: "http://fake/ergast/f1",
+      wikidataSparqlUrl: "http://fake/wikidata/sparql",
     });
   });
 

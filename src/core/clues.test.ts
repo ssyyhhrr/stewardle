@@ -29,6 +29,13 @@ describe("compareGuess", () => {
     });
   });
 
+  it("compares a deceased driver's age at his death, not as if he had lived", () => {
+    const bianchi = named(roster, "Jules Bianchi"); // died 2015 aged 25; would be 37 now
+    expect(bianchi.dateOfDeath).toBe("2015-07-17");
+    expect(compareGuess(bianchi, leclerc, puzzleDay).age).toBe("up"); // Leclerc is 28
+    expect(compareGuess(leclerc, bianchi, puzzleDay).age).toBe("down");
+  });
+
   it("marks a team the answer used to drive for as previous", () => {
     const ericsson = named(roster, "Marcus Ericsson"); // last raced for Sauber, Leclerc's first team
     expect(compareGuess(ericsson, leclerc, puzzleDay).team).toBe("previous");

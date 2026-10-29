@@ -1,0 +1,23 @@
+{
+  "head": {
+    "vars": [
+      "article",
+      "death"
+    ]
+  },
+  "results": {
+    "bindings": [
+      {
+        "article": {
+          "type": "uri",
+          "value": "https://en.wikipedia.org/wiki/Jules_Bianchi"
+        },
+        "death": {
+          "datatype": "http://www.w3.org/2001/XMLSchema#dateTime",
+          "type": "literal",
+          "value": "2015-07-17T00:00:00Z"
+        }
+      }
+    ]
+  }
+}

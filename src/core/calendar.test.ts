@@ -59,4 +59,16 @@ describe("ageOn", () => {
     expect(ageOn("2000-02-29", day("2026-02-28"))).toBe(25);
     expect(ageOn("2000-02-29", day("2026-03-01"))).toBe(26);
   });
+
+  it("stops at the age on the day of death", () => {
+    // Jules Bianchi, born 1989-08-03, died 2015-07-17 aged 25.
+    expect(ageOn("1989-08-03", day("2026-10-29"), "2015-07-17")).toBe(25);
+    expect(ageOn("1989-08-03", day("2015-07-17"), "2015-07-17")).toBe(25);
+  });
+
+  it("ignores a date of death after the day", () => {
+    expect(ageOn("1989-08-03", day("2014-10-05"), "2015-07-17")).toBe(25);
+    expect(ageOn("1989-08-03", day("2014-08-02"), "2015-07-17")).toBe(24);
+    expect(ageOn("1997-10-16", day("2026-10-16"), "2030-01-01")).toBe(ageOn("1997-10-16", day("2026-10-16")));
+  });
 });

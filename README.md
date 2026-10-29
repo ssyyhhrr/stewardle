@@ -92,13 +92,14 @@ volumes:
 - **Put a reverse proxy in front** for HTTPS, at the root of the site. `GET /healthz` reports health.
 - **Settings** are environment variables, all optional:
 
-| Variable           | Default                          | Meaning                                                                       |
-| ------------------ | -------------------------------- | ----------------------------------------------------------------------------- |
-| `PORT`             | `3000`                           | Listening port                                                                |
-| `HOST`             | `0.0.0.0`                        | Listening address                                                             |
-| `DATA_DIR`         | `/data` in the image             | Where the game keeps its state                                                |
-| `STEWARDLE_SECRET` | generated into `DATA_DIR/secret` | Key that signs players' games, at least 32 characters                         |
-| `JOLPICA_BASE_URL` | `https://api.jolpi.ca/ergast/f1` | Driver data source; `npm run fake-jolpica` serves recorded data for local use |
+| Variable              | Default                             | Meaning                                                                             |
+| --------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
+| `PORT`                | `3000`                              | Listening port                                                                      |
+| `HOST`                | `0.0.0.0`                           | Listening address                                                                   |
+| `DATA_DIR`            | `/data` in the image                | Where the game keeps its state                                                      |
+| `STEWARDLE_SECRET`    | generated into `DATA_DIR/secret`    | Key that signs players' games, at least 32 characters                               |
+| `JOLPICA_BASE_URL`    | `https://api.jolpi.ca/ergast/f1`    | Driver data source; `npm run fake-jolpica` serves recorded data for local use       |
+| `WIKIDATA_SPARQL_URL` | `https://query.wikidata.org/sparql` | Where drivers' dates of death come from; if it fails, the last known dates are kept |
 
 To run it without Docker: `npm ci && npm run build && npm start` on Node 24 or newer.
 
