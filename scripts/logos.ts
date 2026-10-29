@@ -1,13 +1,15 @@
 /**
  * Keeps the team logos (src/client/public/logos/<brand id>.webp) in step with
- * their sources, as recorded in src/core/logos.json.
+ * their sources, as recorded in src/core/logos.json, and watches for drivers
+ * who would show the unknown flag.
  *
  * Usage:
  *   npm run logos                  build every logo that is missing or whose source has changed
  *   npm run logos -- <id> [<id>…]  rebuild just these brands
  *   npm run logos -- --check [--report <file>]
  *                                  change nothing; report new constructors, brands with no
- *                                  logo, and logos that have changed on Wikipedia (used by
+ *                                  logo, logos that have changed on Wikipedia, and this
+ *                                  season's drivers whose nationality has no flag (used by
  *                                  the weekly CI job, which files the report as an issue)
  *
  * Each manifest entry names a Wikipedia or Wikimedia Commons file and how to
@@ -29,6 +31,8 @@ import { readdirSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium, type Page } from "@playwright/test";
+import { UNKNOWN_FLAG, flagFor } from "../src/core/nationalities";
+import { parseStandings } from "../src/core/roster";
 import { brandFor, knownBrandIds } from "../src/core/teams";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -301,6 +305,48 @@ async function currentBrands(): Promise<{ id: string; name: string }[]> {
   }));
 }
 
+/**
+ * This season's drivers who would show the unknown flag, as report sections.
+ * Jolpica's driver list includes rookies before their first race, so a new
+ * nationality is caught early. A missing nationality only matters for drivers
+ * in the standings: reserves on the list often have none, and never play.
+ */
+async function flagSections(): Promise<string[]> {
+  const listed = (await (await fetchPolitely(`${JOLPICA}/current/drivers.json?limit=100`)).json()) as {
+    MRData: {
+      DriverTable: {
+        season: string;
+        Drivers: { givenName: string; familyName: string; nationality?: string }[];
+      };
+    };
+  };
+  const { season, Drivers } = listed.MRData.DriverTable;
+  const unmapped = Drivers.filter((d) => d.nationality?.trim() && flagFor(d.nationality) === UNKNOWN_FLAG);
+  const standings = parseStandings(
+    Number(season),
+    await (await fetchPolitely(`${JOLPICA}/current/driverStandings.json?limit=100`)).json(),
+  );
+  const blank = standings.standings
+    .map((entry) => entry.driver)
+    .filter((d) => d.permanentNumber !== null && d.nationality.trim() === "");
+  const sections: string[] = [];
+  if (unmapped.length > 0)
+    sections.push(
+      "### Nationalities with no flag\n\nThese drivers are on Jolpica's list for this season, and show the unknown flag until " +
+        "their nationality is added to `src/core/nationalities.ts` (every flag is already in " +
+        "`src/client/public/flags/`):\n\n" +
+        unmapped.map((d) => `- ${d.givenName} ${d.familyName} (\`${d.nationality ?? ""}\`)`).join("\n"),
+    );
+  if (blank.length > 0)
+    sections.push(
+      "### Drivers with no nationality\n\nJolpica has no nationality for these drivers in this season's " +
+        "standings, so they show the unknown flag. Nothing needs changing here; it clears once Jolpica " +
+        "fills it in:\n\n" +
+        blank.map((d) => `- ${d.givenName} ${d.familyName}`).join("\n"),
+    );
+  return sections;
+}
+
 /** Everything that needs a person's attention, as Markdown; empty if all is well. */
 async function check(manifest: Manifest): Promise<string> {
   const sections: string[] = [];
@@ -336,6 +382,7 @@ async function check(manifest: Manifest): Promise<string> {
         "its entry in `src/core/logos.json`:\n\n" +
         changed.join("\n"),
     );
+  sections.push(...(await flagSections()));
   return sections.join("\n\n");
 }
 
@@ -346,7 +393,7 @@ if (args.includes("--check")) {
   const at = args.indexOf("--report");
   const file = at >= 0 ? args[at + 1] : undefined;
   if (file) await writeFile(file, report);
-  process.stdout.write(report === "" ? "Every logo is up to date.\n" : `${report}\n`);
+  process.stdout.write(report === "" ? "Every logo and flag is up to date.\n" : `${report}\n`);
 } else {
   await buildLogos(
     manifest,

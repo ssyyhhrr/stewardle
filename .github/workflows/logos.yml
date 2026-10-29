@@ -1,9 +1,10 @@
-# Watches the team logos: every week, and twice before each season starts,
-# checks for constructors racing without a logo and for logos that have
-# changed on Wikipedia (see scripts/logos.ts). Anything it finds is filed as
-# one GitHub issue, updated in place on later runs and closed once all is
-# well again. It never commits or opens branches.
-name: Logos
+# Watches the team logos and flags: every week, and twice before each season
+# starts, checks for constructors racing without a logo, for logos that have
+# changed on Wikipedia and for drivers whose nationality has no flag (see
+# scripts/logos.ts). Anything it finds is filed as one GitHub issue, updated
+# in place on later runs and closed once all is well again. It never commits
+# or opens branches.
+name: Logos and flags
 
 on:
   schedule:
@@ -21,7 +22,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_TOKEN: ${{ github.token }}
-      TITLE: Team logos need attention
+      TITLE: Team logos or flags need attention
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -39,5 +40,5 @@ jobs:
             if [ -n "$issue" ]; then gh issue edit "$issue" --body-file body.md
             else gh issue create --title "$TITLE" --body-file body.md; fi
           elif [ -n "$issue" ]; then
-            gh issue close "$issue" --comment "Every logo is up to date."
+            gh issue close "$issue" --comment "Every logo and flag is up to date."
           fi
