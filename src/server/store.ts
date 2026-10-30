@@ -1,5 +1,5 @@
 /**
- * JSON files in the data directory. Writes go to a temporary file, which is
+ * Files in the data directory. Writes go to a temporary file, which is
  * fsynced and then renamed over the target, and the directory is fsynced, so
  * neither a crash nor a power cut leaves a half-written or empty file. (The
  * old server deleted drivers.json before rewriting it.)
@@ -27,12 +27,17 @@ let counter = 0;
 
 /** Atomically replaces `file` with `value` as JSON, creating directories as needed. */
 export async function writeJsonAtomic(file: string, value: unknown): Promise<void> {
+  await writeTextAtomic(file, JSON.stringify(value) + "\n");
+}
+
+/** Atomically replaces `file` with `text`, creating directories as needed. */
+export async function writeTextAtomic(file: string, text: string): Promise<void> {
   await mkdir(path.dirname(file), { recursive: true });
   counter += 1;
   const temp = `${file}.${String(process.pid)}.${String(counter)}.tmp`;
   const handle = await open(temp, "w", 0o600);
   try {
-    await handle.writeFile(JSON.stringify(value) + "\n");
+    await handle.writeFile(text);
     await handle.sync();
   } finally {
     await handle.close();

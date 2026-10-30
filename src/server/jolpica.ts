@@ -7,6 +7,7 @@ import { dayKeyOf } from "../core/calendar";
 import { UNKNOWN_FLAG } from "../core/nationalities";
 import {
   FIRST_SEASON,
+  JolpicaFormatError,
   buildRoster,
   fullName,
   parseLatestRace,
@@ -95,22 +96,39 @@ async function latestRace(options: JolpicaOptions, season: number): Promise<Late
 /**
  * Downloads every season from 2000 to the current one and builds the roster.
  * Throws JolpicaUnavailableError (or a format error) if any season fails, so
- * a partial roster never replaces a complete one. A season with no standings
- * yet is fine.
+ * a partial roster never replaces a complete one. Only the current season may
+ * have no standings yet; an empty earlier season means a bad response, and
+ * accepting it would quietly drop that season's drivers and wins.
  */
 export async function fetchRoster(options: JolpicaOptions): Promise<RosterSnapshot> {
   const currentSeason = Number(dayKeyOf(options.now()).slice(0, 4));
   const seasons: SeasonStandings[] = [];
   for (let season = FIRST_SEASON; season <= currentSeason; season++) {
     try {
-      seasons.push(parseStandings(season, await getJson(options, `${String(season)}/driverStandings.json`)));
+      const standings = parseStandings(
+        season,
+        await getJson(options, `${String(season)}/driverStandings.json`),
+      );
+      if (standings.standings.length === 0 && season < currentSeason) {
+        throw new JolpicaFormatError(`standings ${String(season)}: no standings for a finished season`);
+      }
+      seasons.push(standings);
     } catch (error) {
       // Early in January the new season may not exist yet.
       if (!(error instanceof NotFoundError && season === currentSeason)) throw error;
     }
     await options.sleep(options.requestGapMs ?? 300);
   }
-  const drivers = buildRoster(seasons, await latestRace(options, currentSeason));
+  const built = buildRoster(seasons, await latestRace(options, currentSeason));
+  // A standings entry with no constructors leaves a driver with no team, which
+  // every card and every score needs; leave them out rather than break the day.
+  const teamless = built.filter((d) => d.teams.length === 0);
+  if (teamless.length > 0) {
+    options.log.warn("left out drivers Jolpica lists with no team", {
+      drivers: teamless.map((d) => fullName(d)).join(", "),
+    });
+  }
+  const drivers = built.filter((d) => d.teams.length > 0);
   if (drivers.length === 0) throw new JolpicaUnavailableError("Jolpica returned no drivers");
   options.log.info("fetched roster", { drivers: drivers.length, seasons: seasons.length });
   const unflagged = drivers.filter((d) => d.flag === UNKNOWN_FLAG);

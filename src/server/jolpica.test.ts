@@ -6,6 +6,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { startFakeJolpica, type FakeJolpica } from "../../tests/support/fake-jolpica";
 import { recordedJolpicaRoster, recordedRoster, recordedSeason } from "../../tests/support/recorded-roster";
+import { JolpicaFormatError } from "../core/roster";
 import { JolpicaUnavailableError, fetchRoster, type JolpicaOptions } from "./jolpica";
 import { silentLogger, type LogFields } from "./log";
 
@@ -94,6 +95,48 @@ describe("fetchRoster", () => {
         message: expect.stringContaining("unknown flag") as unknown,
         fields: { drivers: "Charles Leclerc (Martian), Lando Norris (no nationality)" },
       },
+    ]);
+  });
+
+  it("gives up when a finished season comes back with no standings", async () => {
+    const emptied = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const href = url instanceof Request ? url.url : url.toString();
+      if (!href.includes("/2010/driverStandings.json")) return fetch(url, init);
+      return Response.json({ MRData: { StandingsTable: { season: "2010", StandingsLists: [] } } });
+    };
+    await expect(fetchRoster(options({ fetch: emptied }))).rejects.toBeInstanceOf(JolpicaFormatError);
+  });
+
+  it("leaves out, and warns about, a driver Jolpica lists with no team", async () => {
+    const teamless = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const response = await fetch(url, init);
+      const href = url instanceof Request ? url.url : url.toString();
+      if (!href.includes("/driverStandings.json")) return response;
+      const body = (await response.json()) as {
+        MRData: {
+          StandingsTable: {
+            StandingsLists: {
+              DriverStandings: { Driver: { driverId: string }; Constructors: unknown[] }[];
+            }[];
+          };
+        };
+      };
+      for (const list of body.MRData.StandingsTable.StandingsLists) {
+        for (const entry of list.DriverStandings)
+          if (entry.Driver.driverId === "vettel") entry.Constructors = [];
+      }
+      return Response.json(body);
+    };
+    const warnings: { message: string; fields: LogFields | undefined }[] = [];
+    const log = {
+      ...silentLogger,
+      warn: (message: string, fields?: LogFields) => warnings.push({ message, fields }),
+    };
+    const snapshot = await fetchRoster(options({ fetch: teamless, log }));
+    expect(snapshot.drivers.length).toBe(recordedRoster().length - 1);
+    expect(snapshot.drivers.some((d) => d.id === "vettel")).toBe(false);
+    expect(warnings).toEqual([
+      { message: expect.stringContaining("no team") as unknown, fields: { drivers: "Sebastian Vettel" } },
     ]);
   });
 

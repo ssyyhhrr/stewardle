@@ -39,3 +39,37 @@ test("the page switches to the new puzzle when the countdown ends", async ({ pag
   await game.openStats();
   await expect.poll(() => game.readStats()).toMatchObject({ played: 1, won: 1 });
 });
+
+test("a first guess from a page left open past midnight moves to the new puzzle", async ({ page }) => {
+  // The first puzzle is yesterday's, as if the page had been open since then.
+  let calls = 0;
+  await page.route("**/api/puzzle", async (route) => {
+    const response = await route.fetch();
+    const puzzle = (await response.json()) as PuzzleResponse;
+    calls += 1;
+    const shown =
+      calls === 1
+        ? {
+            ...puzzle,
+            day: new Date(Date.parse(`${puzzle.day}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10),
+            gameNumber: puzzle.gameNumber - 1,
+          }
+        : puzzle;
+    await route.fulfill({ response, json: shown });
+  });
+
+  const game = await openGame(page);
+  await game.closeModal();
+  // Not game.guess(): that waits for a scored row, and this guess is refused.
+  await game.input.fill("Lewis Hamilton");
+  await expect(game.suggestions.first()).toBeVisible();
+  await game.input.press("Enter");
+  await expect(page.getByText("A new Stewardle has started!")).toBeVisible();
+  await expect.poll(() => calls).toBe(2);
+  expect(await game.filledRowCount()).toBe(0);
+
+  await game.guess("Lewis Hamilton");
+  await expect.poll(() => game.scoredRowCount()).toBe(1);
+  await game.openStats();
+  await expect.poll(() => game.readStats()).toMatchObject({ played: 0 });
+});

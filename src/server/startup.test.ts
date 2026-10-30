@@ -4,7 +4,7 @@
  * nightly refresh runs at 23:30 UTC with retries, and the token secret
  * persists across restarts (or every player's game would reset on restart).
  */
-import { mkdtemp, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -158,5 +158,6 @@ describe("loadSecret", () => {
     expect(await loadSecret(null, dir)).toBe(first);
     expect((await readFile(path.join(dir, "secret"), "utf8")).trim()).toBe(first);
     expect((await stat(path.join(dir, "secret"))).mode & 0o777).toBe(0o600);
+    expect(await readdir(dir)).toEqual(["secret"]); // written via a temp file, which is gone
   });
 });

@@ -173,7 +173,14 @@ describe("POST /api/guess", () => {
     const forged = await h.request("POST", "/api/guess", { token: "abc.def", driverId: "hamilton" });
     expect([forged.status, await forged.json()]).toEqual([400, { error: "bad-token" }]);
 
-    for (const body of ["{not json", { driverId: 5 }, { token: 7, driverId: "x" }, [1]]) {
+    for (const body of [
+      "{not json",
+      { driverId: 5 },
+      { token: 7, driverId: "x" },
+      [1],
+      { token: null, driverId: "hamilton", day: "yesterday" },
+      { token: null, driverId: "hamilton", day: 20260926 },
+    ]) {
       const response = await h.request("POST", "/api/guess", body);
       expect(response.status).toBe(400);
     }
@@ -186,6 +193,24 @@ describe("POST /api/guess", () => {
     h.clock.now += 24 * 3600_000;
     const stale = await h.request("POST", "/api/guess", { token: first?.token, driverId: "norris" });
     expect([stale.status, await stale.json()]).toEqual([409, { error: "day-changed" }]);
+  });
+
+  it("sends a first guess from yesterday's page back to the new puzzle", async () => {
+    const shown = TODAY;
+    h.clock.now = startOfDay(addDays(TODAY, 1)) + 60_000;
+    const late = await h.request("POST", "/api/guess", { token: null, driverId: "hamilton", day: shown });
+    expect([late.status, await late.json()]).toEqual([409, { error: "day-changed" }]);
+    const current = await h.request("POST", "/api/guess", {
+      token: null,
+      driverId: "hamilton",
+      day: addDays(TODAY, 1),
+    });
+    expect(current.status).toBe(200);
+  });
+
+  it("still scores a first guess sent without a day, as older pages do", async () => {
+    const response = await h.request("POST", "/api/guess", { token: null, driverId: "hamilton" });
+    expect(response.status).toBe(200);
   });
 });
 
@@ -239,6 +264,22 @@ describe("roster refreshes", () => {
     h.clock.now = startOfDay(addDays(TODAY, 1));
     expect(await winsOf()).toBe(before + 1);
     expect(h.game.rosterStatus).toEqual({ activeFetchedAt: "2026-09-26T23:30:00.000Z", pendingFrom: null });
+  });
+
+  it("hold a refresh that finished after midnight if the new day is already being played", async () => {
+    const startedAt = startOfDay(addDays(TODAY, 1)) - 10 * 60_000;
+    const refreshed = roster.map((d) => (d.id === "hamilton" ? { ...d, wins: d.wins + 1 } : d));
+    h.clock.now = startOfDay(addDays(TODAY, 1)) + 60_000;
+    await h.request("GET", "/api/puzzle"); // someone starts the new day on the current roster
+    await h.game.addRoster({ fetchedAt: "2026-09-26T23:50:00.000Z", drivers: refreshed }, startedAt);
+    expect(h.game.rosterStatus.pendingFrom).toBe(addDays(TODAY, 2));
+  });
+
+  it("use a refresh that finished after midnight at once if nobody has played the new day", async () => {
+    const startedAt = startOfDay(addDays(TODAY, 1)) - 10 * 60_000;
+    h.clock.now = startOfDay(addDays(TODAY, 1)) + 60_000;
+    await h.game.addRoster({ fetchedAt: "2026-09-26T23:50:00.000Z", drivers: roster }, startedAt);
+    expect(h.game.rosterStatus).toEqual({ activeFetchedAt: "2026-09-26T23:50:00.000Z", pendingFrom: null });
   });
 });
 

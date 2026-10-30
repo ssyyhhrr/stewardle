@@ -33,7 +33,10 @@ export function resolveRoster(state: RosterState, today: DayKey): RosterState {
  * Adds a freshly fetched roster. With nothing active yet (first boot) it is
  * used immediately; otherwise it takes effect the day after `fetchDay`, the
  * day the fetch *started* (a refresh begun at 23:30 that finishes after
- * midnight still belongs to the old day). A pending roster whose day has
+ * midnight still belongs to the old day). If that day has already begun, the
+ * roster is used at once only while nobody has been served today's puzzle
+ * (`servedToday`); once someone has, it waits for the next midnight instead,
+ * so their clues don't change mid-game. A pending roster whose day has
  * already come is promoted first rather than overwritten.
  */
 export function addFetchedRoster(
@@ -41,12 +44,14 @@ export function addFetchedRoster(
   snapshot: RosterSnapshot,
   fetchDay: DayKey,
   today: DayKey,
+  servedToday: boolean,
 ): RosterState {
   const current = resolveRoster(state, today);
   if (!current.active) return { active: snapshot, pending: null };
   const effectiveFrom = addDays(fetchDay, 1);
-  if (effectiveFrom <= today) return { active: snapshot, pending: null };
-  return { active: current.active, pending: { ...snapshot, effectiveFrom } };
+  if (effectiveFrom > today) return { active: current.active, pending: { ...snapshot, effectiveFrom } };
+  if (!servedToday) return { active: snapshot, pending: null };
+  return { active: current.active, pending: { ...snapshot, effectiveFrom: addDays(today, 1) } };
 }
 
 function isSnapshot(value: unknown): value is RosterSnapshot {

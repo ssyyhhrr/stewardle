@@ -42,6 +42,19 @@ export function loadSave(): SaveFile {
   return save;
 }
 
+/**
+ * The save as stored right now, which another tab may have changed since
+ * this one loaded; null if nothing is stored or storage can't be read.
+ */
+export function readStoredSave(): SaveFile | null {
+  try {
+    const text = storage()?.getItem(SAVE_KEY) ?? null;
+    return text === null ? null : parseSave(text);
+  } catch {
+    return null;
+  }
+}
+
 /** Saves, ignoring failures: losing the save is better than breaking the game. */
 export function writeSave(save: SaveFile): void {
   try {

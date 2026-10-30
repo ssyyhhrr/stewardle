@@ -14,7 +14,7 @@ import { DEFEAT_CALL, randomVictoryCall } from "./phrases";
 import { shareResult, type ShareOutcome } from "./share";
 import { idSet, indexById } from "./collections";
 import { showSettings } from "./display";
-import { loadSave, writeSave } from "./storage";
+import { loadSave, readStoredSave, writeSave } from "./storage";
 
 /** A filled board row: who was guessed and how each clue scored. */
 export interface BoardRow extends SavedGuess {
@@ -105,7 +105,8 @@ export class GameController {
     this.clockOffset = result.data.serverTime - Date.now();
     this.puzzle = result.data;
     this.phase = "ready";
-    if (this.save.game && this.save.game.day !== result.data.day) this.update({ game: null });
+    const day = result.data.day;
+    this.update((latest) => (latest.game && latest.game.day !== day ? { game: null } : {}));
     this.headline = this.headlineFor(this.status);
     this.revealFrom = this.rows.length;
     return true;
@@ -120,9 +121,14 @@ export class GameController {
    * ahead) or can't be reached, it tries again with a doubling delay capped
    * at a minute, and not at all while the tab is hidden (becoming visible
    * triggers a fresh check), so an offline phone isn't polling forever.
+   * Those retries skip the clock check: loading the puzzle re-measures the
+   * clock offset, which can put now() back before midnight while the server
+   * is about to move on, and the loop would then stop with nothing to
+   * restart it.
    */
-  async checkForNewDay(): Promise<void> {
-    if (!this.puzzle || this.checkingDay || this.now() < this.puzzle.nextPuzzleAt) return;
+  async checkForNewDay(retry = false): Promise<void> {
+    if (!this.puzzle || this.checkingDay) return;
+    if (!retry && this.now() < this.puzzle.nextPuzzleAt) return;
     this.checkingDay = true;
     try {
       const previous = this.puzzle.day;
@@ -132,7 +138,7 @@ export class GameController {
         return;
       }
       if (document.visibilityState === "visible") {
-        setTimeout(() => void this.checkForNewDay(), this.retryDelay);
+        setTimeout(() => void this.checkForNewDay(true), this.retryDelay);
         this.retryDelay = Math.min(this.retryDelay * 2, RETRY_MAX_MS);
       }
     } finally {
@@ -140,8 +146,15 @@ export class GameController {
     }
   }
 
-  private update(changes: Partial<SaveFile>): void {
-    this.save = { ...this.save, ...changes };
+  /**
+   * Applies `changes` to the save as stored now rather than as this tab
+   * loaded it, so a tab left open doesn't write its old stats or settings
+   * over newer ones from another tab. Pass a function to build the changes
+   * from that stored save.
+   */
+  private update(changes: Partial<SaveFile> | ((latest: SaveFile) => Partial<SaveFile>)): void {
+    const latest = readStoredSave() ?? this.save;
+    this.save = { ...latest, ...(typeof changes === "function" ? changes(latest) : changes) };
     writeSave(this.save);
   }
 
@@ -171,14 +184,15 @@ export class GameController {
     }
     this.busy = true;
     try {
-      let result = await submitGuess({ token: this.game?.token ?? null, driverId });
+      // The day lets the server refuse a first guess from a page left open past midnight.
+      let result = await submitGuess({ token: this.game?.token ?? null, driverId, day: puzzle.day });
       if (!result.ok && result.kind === "rejected" && result.error === "bad-token") {
         // The server no longer accepts this game (its signing secret changed),
         // so the saved board can't be continued: start the day afresh and replay the guess.
         this.update({ game: null });
         this.revealFrom = 0;
         this.say("Your game couldn't be verified, so today's board has been restarted.");
-        result = await submitGuess({ token: null, driverId });
+        result = await submitGuess({ token: null, driverId, day: puzzle.day });
       }
       if (!result.ok) {
         if (result.kind === "offline")
@@ -192,16 +206,18 @@ export class GameController {
       const { feedback, token, status, answer } = result.data;
       const guesses = [...(this.game?.guesses ?? []), { driverId, feedback }];
       const game: SavedGame = { day: puzzle.day, token, guesses, status, answerId: answer?.id ?? null };
-      let stats = this.save.stats;
-      if (status !== "playing") {
-        stats = recordResult(
-          stats,
-          puzzle.day,
-          status === "won" ? { won: true, guesses: guesses.length } : { won: false },
-        );
-        this.headline = this.headlineFor(status);
-      }
-      this.update({ game, stats });
+      if (status !== "playing") this.headline = this.headlineFor(status);
+      this.update((latest) => ({
+        game,
+        stats:
+          status === "playing"
+            ? latest.stats
+            : recordResult(
+                latest.stats,
+                puzzle.day,
+                status === "won" ? { won: true, guesses: guesses.length } : { won: false },
+              ),
+      }));
     } finally {
       this.busy = false;
     }
@@ -231,7 +247,7 @@ export class GameController {
   }
 
   private changeSettings(changes: Partial<Settings>): void {
-    this.update({ settings: { ...this.save.settings, ...changes } });
+    this.update((latest) => ({ settings: { ...latest.settings, ...changes } }));
     this.stopFollowingDevice();
     this.stopFollowingDevice = showSettings(this.save.settings);
   }
@@ -239,7 +255,7 @@ export class GameController {
   closeTutorial(): void {
     this.tutorialOpen = false;
     if (!this.save.settings.tutorialSeen)
-      this.update({ settings: { ...this.save.settings, tutorialSeen: true } });
+      this.update((latest) => ({ settings: { ...latest.settings, tutorialSeen: true } }));
   }
 
   /** Guesses left today. */

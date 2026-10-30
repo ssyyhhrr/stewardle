@@ -3,12 +3,13 @@
  * the token secret, the first roster (Jolpica is required on first boot),
  * and the nightly refresh.
  */
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { addDays, dayKeyOf, nextDayStart, startOfDay } from "../core/calendar";
 import type { RosterSnapshot } from "../core/roster-state";
 import type { GameService } from "./game";
 import type { Logger } from "./log";
+import { writeTextAtomic } from "./store";
 import { generateSecret } from "./token";
 
 /** Returns the configured secret, or reads (creating if needed) dataDir/secret. */
@@ -22,8 +23,9 @@ export async function loadSecret(configured: string | null, dataDir: string): Pr
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
   const secret = generateSecret();
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(file, secret + "\n", { mode: 0o600 });
+  // Atomic like every other data file: a crash mid-write must not leave an
+  // empty secret, which would be replaced on restart and void every game.
+  await writeTextAtomic(file, secret + "\n");
   return secret;
 }
 
@@ -75,7 +77,8 @@ export async function ensureRoster(
 
 /**
  * One refresh; failures are logged and the current roster stays in use. The
- * roster is dated by when the fetch started, not when it finished.
+ * roster is dated by when the fetch started, not when it finished (see
+ * GameService.addRoster for a fetch that finishes after midnight).
  */
 export async function refreshOnce(
   game: GameService,

@@ -71,6 +71,13 @@ export interface PuzzleResponse {
 export interface GuessRequest {
   readonly token: string | null;
   readonly driverId: string;
+  /**
+   * The puzzle day the page is showing. A token carries its own day, but a
+   * first guess has none, so without this a page left open past midnight
+   * would be scored against the new day's answer. Optional so that pages
+   * cached from before it existed keep working.
+   */
+  readonly day?: DayKey;
 }
 
 /** POST /api/guess success. `answer` is only present once the game is over. */

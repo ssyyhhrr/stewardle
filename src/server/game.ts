@@ -113,10 +113,19 @@ export class GameService {
   /**
    * Stores a freshly fetched roster: immediately on first boot, otherwise
    * from the day after the fetch *started* (`startedAt`, epoch ms), so a
-   * 23:30 refresh that finishes after midnight isn't pushed back a day.
+   * 23:30 refresh that finishes after midnight isn't pushed back a day,
+   * unless today's answer has already been picked: then someone may be
+   * playing on the current roster, and the new one waits a day.
    */
   async addRoster(snapshot: RosterSnapshot, startedAt: number = this.deps.now()): Promise<void> {
-    this.rosterState = addFetchedRoster(this.rosterState, snapshot, dayKeyOf(startedAt), this.today());
+    const today = this.today();
+    this.rosterState = addFetchedRoster(
+      this.rosterState,
+      snapshot,
+      dayKeyOf(startedAt),
+      today,
+      this.history[today] !== undefined,
+    );
     await writeJsonAtomic(GameService.rosterFile(this.deps.dataDir), this.rosterState);
   }
 
@@ -220,14 +229,20 @@ export class GameService {
     };
   }
 
-  /** Scores one guess (POST /api/guess). */
+  /**
+   * Scores one guess (POST /api/guess). `day` is the puzzle the page shows;
+   * a first guess for any day but today is refused as day-changed, just as
+   * a token from another day is.
+   */
   async guess(
     token: string | null,
     driverId: string,
+    day?: DayKey,
   ): Promise<{ ok: true; response: GuessResponse } | { ok: false; reason: GuessFailure }> {
     const today = this.today();
     const drivers = this.drivers(today);
     if (!drivers) return { ok: false, reason: "not-ready" };
+    if (token === null && day !== undefined && day !== today) return { ok: false, reason: "day-changed" };
     const game = token === null ? newGame(today) : verifyGame(token, this.deps.secret);
     if (!game) return { ok: false, reason: "bad-token" };
     const answer = this.answer(today, drivers);

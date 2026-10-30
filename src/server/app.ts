@@ -12,6 +12,7 @@ import { bodyLimit } from "hono/body-limit";
 import { etag } from "hono/etag";
 import { secureHeaders } from "hono/secure-headers";
 import type { ErrorResponse, GuessRequest } from "../core/api";
+import { parseDayKey } from "../core/calendar";
 import type { GameService, GuessFailure } from "./game";
 import type { Logger } from "./log";
 
@@ -34,10 +35,13 @@ const FAILURE_STATUS: Readonly<Record<GuessFailure, 400 | 409 | 503>> = {
 
 function parseGuessRequest(body: unknown): GuessRequest | null {
   if (typeof body !== "object" || body === null) return null;
-  const { token, driverId } = body as { token?: unknown; driverId?: unknown };
+  const { token, driverId, day } = body as { token?: unknown; driverId?: unknown; day?: unknown };
   if (typeof driverId !== "string" || driverId.length > 100) return null;
   if (token !== null && (typeof token !== "string" || token.length > 2000)) return null;
-  return { token, driverId };
+  if (day === undefined) return { token, driverId };
+  const dayKey = typeof day === "string" ? parseDayKey(day) : null;
+  if (!dayKey) return null;
+  return { token, driverId, day: dayKey };
 }
 
 function fail(
@@ -98,7 +102,7 @@ export function createApp(deps: AppDependencies): Hono {
     async (c) => {
       const request = parseGuessRequest(await c.req.json<unknown>().catch(() => null));
       if (!request) return fail(c, "bad-request", 400);
-      const result = await deps.game.guess(request.token, request.driverId);
+      const result = await deps.game.guess(request.token, request.driverId, request.day);
       c.header("Cache-Control", "no-store");
       if (!result.ok) return fail(c, result.reason, FAILURE_STATUS[result.reason]);
       return c.json(result.response);
