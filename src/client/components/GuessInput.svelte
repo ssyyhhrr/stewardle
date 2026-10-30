@@ -115,9 +115,11 @@
           aria-selected={i === active}
           class:active={i === active}
           style:--team={driver.team.colour}
-          onpointerdown={(event) => {
+          onmousedown={(event) => {
             // Keep focus in the input so the keyboard stays up on phones. Picking
             // waits for the click, which a finger that scrolls the list never sends.
+            // This is mousedown, not pointerdown: WebKit (so every iPhone) sends no
+            // click after a tap whose pointerdown was cancelled.
             event.preventDefault();
           }}
           onclick={() => {
